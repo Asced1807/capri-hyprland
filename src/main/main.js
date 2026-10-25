@@ -10,11 +10,15 @@ const {
 const config = require('./config');
 const { createBridge } = require('./bridge');
 const { startWindowWatch } = require('./windows');
+const { isHyprland, applyWindowRules, keepWindowRules, startHyprlandWatch } = require('./hyprland');
 const hooks = require('../../scripts/install-hooks');
 const demoSteps = require('../../scripts/demo-sequence');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const DEV = process.argv.includes('--dev');
+const HYPR = isHyprland();
+// the Wayland app id, what the Hyprland window rule matches
+const APP_CLASS = 'capri-desktop';
 const PORT = Number(process.env.CAPRI_PORT) || 47823;
 const SOUND_EXT = /\.(mp3|wav|ogg|m4a)$/i;
 
@@ -26,6 +30,7 @@ let overlay = null;
 let tray = null;
 let demoTimer = null;
 let windowWatch = null;
+let ruleKeeper = null;
 
 const userSoundsDir = () => path.join(app.getPath('userData'), 'sounds');
 
@@ -48,15 +53,22 @@ function targetDisplay() {
   return screen.getAllDisplays().find((d) => d.id === displayId) || screen.getPrimaryDisplay();
 }
 
+// On Hyprland the overlay covers the whole monitor (the window rule sizes it): Electron doesn't
+// know about the bar's reserved space on Wayland anyway.
+function overlayArea() {
+  const display = targetDisplay();
+  return HYPR ? display.bounds : display.workArea;
+}
+
 function fitOverlay() {
   if (!overlay) return;
-  const { workArea } = targetDisplay();
+  const workArea = overlayArea();
   overlay.setBounds(workArea);
   overlay.webContents.send('overlay:resize', { width: workArea.width, height: workArea.height });
 }
 
 function createOverlay() {
-  const { workArea } = targetDisplay();
+  const workArea = overlayArea();
   overlay = new BrowserWindow({
     ...workArea,
     transparent: true,
@@ -138,7 +150,7 @@ const DEMO_TERMINAL = `<body style="margin:0;background:#14101c;color:#8f8aa3;fo
 function demoWindow(open) {
   demoWin?.destroy();
   demoWin = null;
-  if (!open || process.platform !== 'win32') return false;
+  if (!open || (process.platform !== 'win32' && !HYPR)) return false;
   const b = overlay.getBounds();
   demoWin = new BrowserWindow({
     x: Math.round(b.x + b.width * 0.5 - 310), y: Math.round(b.y + b.height * 0.42), width: 620, height: 300,
@@ -150,7 +162,7 @@ function demoWindow(open) {
   return true;
 }
 
-const LANGS = ['fr', 'en'];
+const LANGS = ['fr', 'en', 'es'];
 
 // 'auto' -> the first system language Capri speaks, English otherwise.
 function resolveLang(setting) {
@@ -181,7 +193,16 @@ function rebuildTray() {
   if (!tray) return;
   const cfg = config.load();
   const hookState = hooks.status();
-  const t = resolveLang(cfg.lang) === 'en'
+  const lang = resolveLang(cfg.lang);
+  const t = lang === 'es'
+    ? {
+      online: `Capri — escuchando en ${PORT}`, teleport: 'Teletransportar', satellite: 'Mirar el satélite', demo: 'Ver la demo', show: 'Traerla de vuelta', hide: 'Guardarla',
+      size: 'Tamaño', small: 'Pequeña', medium: 'Mediana', large: 'Grande', sound: 'Sonido', mute: 'Silenciar',
+      soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse cuando no hay nada', possess: 'Poseer mis ventanas',
+      lang: 'Idioma', auto: 'Automático (sistema)', startup: 'Arrancar con el sistema', hooksOn: 'Hooks de Claude Code: instalados',
+      hooksOff: 'Instalar hooks de Claude Code', hooksRemove: 'Quitar hooks de Claude Code', quit: 'Salir',
+    }
+    : lang === 'en'
     ? {
       online: `Capri — listening on ${PORT}`, teleport: 'Teleport', satellite: 'Look at the satellite', demo: 'Play demo', show: 'Bring her back', hide: 'Put her away',
       size: 'Size', small: 'Small', medium: 'Medium', large: 'Large', sound: 'Sound', mute: 'Mute',
@@ -242,11 +263,11 @@ function rebuildTray() {
     { label: t.possess, type: 'checkbox', checked: cfg.possess, click: (item) => updateConfig({ possess: item.checked }) },
     {
       label: t.lang,
-      submenu: [[t.auto, 'auto'], ['Français', 'fr'], ['English', 'en']].map(([label, lang]) => ({
+      submenu: [[t.auto, 'auto'], ['Español', 'es'], ['Français', 'fr'], ['English', 'en']].map(([label, lang]) => ({
         label, type: 'radio', checked: cfg.lang === lang, click: () => updateConfig({ lang }),
       })),
     },
-    {
+    process.platform === 'linux' ? null : {
       label: t.startup,
       type: 'checkbox',
       checked: app.getLoginItemSettings(loginItemOptions()).openAtLogin,
@@ -259,7 +280,7 @@ function rebuildTray() {
     ...(hookState.installed ? [{ label: t.hooksRemove, click: () => runHooks('uninstall') }] : []),
     { type: 'separator' },
     { label: t.quit, click: () => app.quit() },
-  ]);
+  ].filter(Boolean));
   tray.setContextMenu(menu);
 }
 
@@ -292,6 +313,7 @@ function registerIpc() {
     overlay?.setIgnoreMouseEvents(!on, { forward: true });
   });
   ipcMain.handle('overlay:cursor', () => {
+    if (HYPR) return windowWatch.cursor();
     const p = screen.getCursorScreenPoint();
     const b = overlay.getBounds();
     return { x: p.x - b.x, y: p.y - b.y, inside: p.x >= b.x && p.y >= b.y && p.x < b.x + b.width && p.y < b.y + b.height };
@@ -383,18 +405,23 @@ function main() {
   app.on('second-instance', () => sendCommand('status'));
   if (process.platform === 'win32') app.setAppUserModelId('capri.desktop');
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     serveProtocol();
     registerIpc();
+    if (HYPR) {
+      await applyWindowRules(APP_CLASS);
+      ruleKeeper = keepWindowRules(APP_CLASS);
+    }
     createOverlay();
     createTray();
-    windowWatch = startWindowWatch({
-      overlay,
-      onUpdate: (data) => overlay?.webContents.send('windows:update', data),
-    });
+    const onUpdate = (data) => overlay?.webContents.send('windows:update', data);
+    windowWatch = HYPR
+      ? startHyprlandWatch({ overlay, onUpdate, onPointer: (p) => overlay?.webContents.send('overlay:pointer', p) })
+      : startWindowWatch({ overlay, onUpdate });
     createBridge({
       port: PORT,
       onEvent: (evt) => overlay?.webContents.send('claude:event', evt),
+      onToggle: () => toggleVisible(),
       onDebug: DEV ? debugHandler : null,
     });
     globalShortcut.register('Control+Alt+C', () => toggleVisible());
@@ -406,6 +433,7 @@ function main() {
   app.on('will-quit', () => {
     globalShortcut.unregisterAll();
     windowWatch?.stop();
+    ruleKeeper?.stop();
   });
   app.on('window-all-closed', (e) => e.preventDefault());
 }

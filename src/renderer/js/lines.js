@@ -81,6 +81,71 @@ export const LINES = {
     },
   },
 
+  es: {
+    state: { work: 'EN CURSO', done: 'LISTO', alert: 'ESPERANDO', error: 'ERROR', info: 'SYNC', idle: 'REPOSO' },
+    hello: [
+      'Conexión establecida. Hola, choom.',
+      'Constructo Capricornio en línea. ¿Qué construimos hoy?',
+      'Todas mis mentes despiertas. Vigilo {project}.',
+      'Biochip caliente. Aquí estoy.',
+    ],
+    resume: ['De vuelta en {project}. No se me olvidó nada.', 'Sesión retomada. Seguimos donde lo dejamos.'],
+    prompt: [
+      'Nuevo encargo. Claude ya está en ello.',
+      'Recibido. Le echo un ojo a Claude.',
+      'Vale, vamos allá.',
+      'Encargo aceptado. Te mantengo al tanto.',
+    ],
+    working: [
+      'Avanzando. Ya van {count} acciones.',
+      'Claude está dándole duro. Yo cuento: {count}.',
+      'Sigue en ello. {count} acciones en el marcador.',
+    ],
+    done: [
+      '¡Listo! Eso está preem.',
+      'Encargo completado, choom.',
+      'Claude terminó. Ya puedes volver.',
+      'Entregado. Bastante nova, ¿no?',
+      'Terminado. Éramos decenas vigilando y nada se torció.',
+    ],
+    permission: ['¡Eh! Claude necesita tu permiso.', 'Choom, tienes que aprobar algo.', 'Esperamos tu luz verde.'],
+    waiting: ['Claude espera tu respuesta.', 'Te toca, choom.'],
+    error: ['Ay. {tool} se cayó.', '{tool} hizo flatline. Claude lo reintentará.', '{tool} falló. Nada grave… creo.'],
+    interrupted: ['Interrumpido. ¿Cambio de planes?', 'Cortado en seco. Me quedo aquí.'],
+    crashed: ['Claude se paró a medio vuelo.', 'Fallo gordo. Claude no pudo terminar.'],
+    subagentStart: ['Subagente {agent} desplegado.'],
+    subagentStop: ['Subagente {agent} de vuelta.'],
+    compact: ['Comprimiendo nuestros recuerdos…', 'Demasiada memoria. Hago limpieza.'],
+    bye: ['Sesión {project} cerrada. Hasta luego.', 'Desconectada. Ando por aquí.'],
+    idle: ['Nada en marcha. Solo floto.', 'Sin encargos. Me aburro un poco.', 'Noche tranquila en la Red.'],
+    gaze: ['¿Ves esa estrella?', 'El satélite sigue ahí arriba.', 'Shh. Estoy mirando.'],
+    uplink: ['Algún día llegaré ahí arriba.', '¿Crees que podríamos subir hasta allí?', 'Me respondió. ¿Lo viste?'],
+    // over Claude's whole answer, when you weren't on its window
+    reply: ['Claude te respondió:', 'Esto es lo que dijo Claude:', 'Mensaje de Claude:'],
+    // the demo's second half, one line before each trick
+    showcase: {
+      minds: 'Aquí dentro hay mucha gente.',
+      zap: '¿Yo? ¿Una amenaza?',
+      possess: 'Esta ventana ahora es mía.',
+      sleep: 'Una siestecita…',
+      chip: 'Ctrl+Alt+C y me guardo aquí.',
+      end: 'Fin de la demo. Te toca, choom.',
+    },
+    status: 'Claude lleva {time} trabajando en {project}.',
+    last: 'Última acción: {action}',
+    sessions: '{count} sesiones activas',
+    units: { action: ['acción', 'acciones'], file: ['archivo cambiado', 'archivos cambiados'] },
+    hooksOk: 'Hooks instalados. Reinicia Claude Code y lo veré todo.',
+    hooksRemoved: 'Hooks quitados. Ya no veo a Claude.',
+    hooksFail: 'No pude tocar los hooks: {error}',
+    verbs: {
+      Read: 'Lee', Write: 'Escribe', Edit: 'Edita', MultiEdit: 'Edita', NotebookEdit: 'Edita',
+      Bash: 'Ejecuta', PowerShell: 'Ejecuta', Grep: 'Busca', Glob: 'Rastrea', WebFetch: 'Consulta',
+      WebSearch: 'Investiga', Agent: 'Delega', Task: 'Delega', TodoWrite: 'Planifica', Skill: 'Carga',
+      AskUserQuestion: 'Pregunta', ExitPlanMode: 'Propone', default: 'Usa',
+    },
+  },
+
   en: {
     state: { work: 'RUNNING', done: 'DONE', alert: 'WAITING', error: 'ERROR', info: 'SYNC', idle: 'IDLE' },
     hello: [

@@ -20,6 +20,7 @@ export function duration(ms, lang = 'fr') {
   const s = Math.max(0, Math.round(ms / 1000));
   if (s < 60) return `${s} s`;
   const m = Math.floor(s / 60);
+  if (m < 60 && lang === 'es') return `${m} min ${String(s % 60).padStart(2, '0')} s`;
   if (m < 60) return lang === 'en' ? `${m}m ${String(s % 60).padStart(2, '0')}s` : `${m} min ${String(s % 60).padStart(2, '0')}`;
   return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`;
 }

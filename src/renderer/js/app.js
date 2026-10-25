@@ -111,6 +111,18 @@ async function boot() {
     refreshHit();
     hoverChip();
   });
+  // Wayland doesn't forward the pointer to a click-through window: on Hyprland the main process
+  // reads it from the compositor and we replay it as the moves the browser would have sent.
+  let pointerInside = false;
+  host.onPointer?.((p) => {
+    if (p.inside) {
+      pointerInside = true;
+      window.dispatchEvent(new MouseEvent('mousemove', { clientX: p.x, clientY: p.y }));
+    } else if (pointerInside) {
+      pointerInside = false;
+      document.dispatchEvent(new MouseEvent('mouseleave'));
+    }
+  });
   window.addEventListener('click', (e) => {
     if (chip.visible && chip.contains(e.clientX, e.clientY, 0)) comeOut();
   });
@@ -332,6 +344,12 @@ async function boot() {
 
 // boot-time lines that only make sense here
 function t0(lang) {
+  if (lang === 'es') {
+    return {
+      online: ['Capri en línea.', 'De vuelta en tu escritorio, choom.'],
+      noHooks: 'Todavía no veo a Claude. Clic derecho en mi icono de la barra › «Instalar hooks de Claude Code».',
+    };
+  }
   return lang === 'en'
     ? {
       online: ['Capri online.', 'Back on your desktop, choom.'],

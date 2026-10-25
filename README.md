@@ -1,5 +1,11 @@
 **English** · [Français](README.fr.md)
 
+> **Hyprland fork.** This is a fork of [mochiiwuff/capri-desktop](https://github.com/mochiiwuff/capri-desktop)
+> that makes Capri work on Linux under **Hyprland** (Wayland): click-through with pixel-precise hit-testing,
+> sitting on your windows, possessing them, and a Spanish translation. All the credit for Capri, her art and
+> her acting goes to the original project. Same license (MIT for the code, see [Credits and rights](#credits-and-rights)).
+> Jump to [Linux / Hyprland](#linux--hyprland).
+
 # Capri
 
 Capri, the *Project Capricorn* construct from Cyberpunk: Edgerunners season 2, lives on your desktop
@@ -67,8 +73,9 @@ comes to find you when Claude needs your permission, and loses it when the job i
 
 ![Asleep down to her mask, waking up, and put away bottom left](docs/sleep.png)
 
-Window tracking is Windows-only for now (a tiny PowerShell helper reads window positions, no titles, no contents).
-On macOS and Linux she still floats, peeks, falls and wanders.
+Window tracking works on Windows (a tiny PowerShell helper reads window positions, no titles, no contents)
+and on Hyprland (positions read from the compositor's IPC socket, no titles, no contents).
+On macOS and other Linux desktops she still floats, peeks, falls and wanders.
 
 She only catches the mouse on her actual body (pixel-precise): the rest of the screen works as usual.
 
@@ -102,6 +109,44 @@ cd capri-desktop
 npm install
 npm start
 ```
+
+### Linux / Hyprland
+
+Needs [Node.js](https://nodejs.org) 20 or newer and Hyprland (tested on 0.56, Lua and `.conf` configs).
+
+```bash
+git clone https://github.com/Asced1807/capri-hyprland.git
+cd capri-hyprland
+npm install
+node node_modules/electron/install.js   # only if npm skipped Electron's download
+npm start
+```
+
+Nothing to add to your Hyprland config for her to show up: on start she registers a runtime window rule
+for herself (floating, pinned on every workspace, never focused, no border, shadow, blur or opacity,
+the size of the monitor). Nothing is written to your config, and she puts the rule back after every config reload.
+
+What's different from Windows, and why:
+
+- **The pointer**: Wayland doesn't send mouse moves to a click-through window, so Capri reads the pointer
+  from Hyprland's IPC socket (about 30 times a second) to know when you're over her body.
+- **Your windows**: read from `j/clients` on the same socket (positions and sizes only), so she can sit on them,
+  ride along, fall off and possess them.
+- **Ctrl+Alt+C**: Electron's global shortcuts don't reach Wayland apps. Bind it in Hyprland instead
+  (Lua config, e.g. in `hypr-user.lua`):
+
+  ```lua
+  hl.bind("CTRL + ALT + C", hl.dsp.exec_cmd("curl -s -X POST http://127.0.0.1:47823/toggle"))
+  ```
+
+  or with a `.conf` config: `bind = CTRL ALT, C, exec, curl -s -X POST http://127.0.0.1:47823/toggle`.
+- **Start with the session**: the tray's "Start with Windows" is hidden on Linux. Add it to your autostart:
+
+  ```lua
+  hl.on("hyprland.start", function() hl.exec_cmd("cd ~/capri-hyprland && npm start") end)
+  ```
+
+- **Language**: she speaks Spanish too (tray › Language › Español).
 
 ### Hook her up to Claude Code
 
