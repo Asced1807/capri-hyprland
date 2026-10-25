@@ -151,7 +151,7 @@ function keepWindowRules(className, onReload = () => {}) {
 
 // Same feed as the Windows helper: { fg, wins } with the visible windows front first,
 // in overlay coordinates. Plus the pointer, which Wayland won't forward to a click-through window.
-function startHyprlandWatch({ overlay, onUpdate, onPointer, isPressed = () => false }) {
+function startHyprlandWatch({ overlay, onUpdate, onPointer, onFullscreen = () => {}, isPressed = () => false }) {
   let stopped = false;
   let origin = { x: 0, y: 0, monitor: null };
   let lastSnap = '';
@@ -159,6 +159,7 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer, isPressed = () => fa
   let givingBack = false;
   let selfAddress = null;
   let passThrough = true; // what the rule starts with
+  let fullscreen = null; // a fullscreen window on the screen you see (a game, a video)
   let lastPointer = '';
   let pointer = { x: 0, y: 0, inside: false };
 
@@ -203,6 +204,11 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer, isPressed = () => fa
       .filter((c) => c.mapped && !c.hidden && !isSelf(c) && shown.has(c.workspace.id))
       .sort((a, b) => a.focusHistoryID - b.focusHistoryID);
     giveBackTo = onScreen[0]?.address || null;
+    const full = onScreen.some((c) => c.fullscreen);
+    if (full !== fullscreen) {
+      fullscreen = full;
+      onFullscreen(full);
+    }
     // The overlay must never keep the keyboard: Hyprland gives it the focus when you switch
     // workspaces with the pointer anywhere (she covers the whole screen), or when you click her.
     // Unless you're holding her right now, the keyboard goes back where it belongs.
