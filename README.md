@@ -141,7 +141,7 @@ What's different from Windows, and why:
   ```
 
 - **Language**: she speaks Spanish too (tray › Language › Español).
-- **Your name**: where she'd say *choom* she uses your Linux user name (`asce` → *Asce*), or any name you give
+- **Your name**: where she'd say *choom* she uses your Linux user name (`maria` → *Maria*), or any name you give
   her from the tray › *What she calls you*. This works on every platform.
 
 ### Hook her up to Claude Code

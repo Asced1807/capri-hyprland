@@ -188,7 +188,7 @@ function resolveLang(setting) {
   return 'en';
 }
 
-// Your system user name, "asce" -> "Asce"
+// Your system user name, "maria" -> "Maria"
 function systemUserName() {
   let user = '';
   try {
