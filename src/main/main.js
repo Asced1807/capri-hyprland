@@ -257,6 +257,14 @@ function rebuildTray() {
       soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse sola', possess: 'Poseer ventanas sola',
       lang: 'Idioma', auto: 'Automático (sistema)', startup: 'Arrancar con el sistema', hooksOn: 'Hooks de Claude Code: instalados',
       hooksOff: 'Instalar hooks de Claude Code', hooksRemove: 'Quitar hooks de Claude Code', quit: 'Salir',
+      acts: 'Animaciones',
+      actNames: {
+        nap: 'Siesta: la máscara verde', teleport: 'Teletransporte', peek: 'Asomarse por un borde', sit: 'Sentarse en una ventana',
+        fall: 'Caerse', possess: 'Poseer una ventana', gaze: 'Mirar el satélite', satellite: 'Satélite completo (luz roja)',
+        victory: 'Celebración', alarm: 'Alarma: venir a tu cursor', zap: 'Rayo a tu cursor', hurt: 'Golpe de error',
+        spin: 'Giro', hop: 'Salto', split: 'Sus otras mentes (copias)', curious: 'Ladear la cabeza', look: 'Mirar a los lados',
+        turn: 'Darse la vuelta', flinch: 'Sobresalto',
+      },
       possessNow: 'Poseer una ventana', lively: 'Más animada', name: 'Cómo me llamas', nameUser: 'Mi usuario', nameOther: 'Otro nombre…', nameAsk: '¿Cómo quieres que te llame?', nameSave: 'Guardar',
     }
     : lang === 'en'
@@ -266,6 +274,14 @@ function rebuildTray() {
       soundsDir: 'Open custom sounds folder', screen: 'Screen', wander: 'Wander around when idle', possess: 'Possess my windows',
       lang: 'Language', auto: 'Automatic (system)', startup: 'Start with Windows', hooksOn: 'Claude Code hooks: installed',
       hooksOff: 'Install Claude Code hooks', hooksRemove: 'Remove Claude Code hooks', quit: 'Quit',
+      acts: 'Animations',
+      actNames: {
+        nap: 'Nap: the green mask', teleport: 'Teleport', peek: 'Peek from an edge', sit: 'Sit on a window',
+        fall: 'Fall', possess: 'Possess a window', gaze: 'Look at the satellite', satellite: 'Whole satellite (red light)',
+        victory: 'Victory', alarm: 'Alarm: come to your pointer', zap: 'Zap your pointer', hurt: 'Error hit',
+        spin: 'Spin', hop: 'Hop', split: 'Her other minds (copies)', curious: 'Cock her head', look: 'Look around',
+        turn: 'Turn around', flinch: 'Flinch',
+      },
       possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
     }
     : {
@@ -274,6 +290,14 @@ function rebuildTray() {
       soundsDir: 'Ouvrir le dossier des sons perso', screen: 'Écran', wander: 'Se balader quand rien ne se passe', possess: 'Posséder mes fenêtres',
       lang: 'Langue', auto: 'Automatique (système)', startup: 'Lancer au démarrage', hooksOn: 'Hooks Claude Code : installés',
       hooksOff: 'Installer les hooks Claude Code', hooksRemove: 'Retirer les hooks Claude Code', quit: 'Quitter',
+      acts: 'Animations',
+      actNames: {
+        nap: 'Sieste : le masque vert', teleport: 'Téléportation', peek: 'Passer la tête par un bord', sit: 'S’asseoir sur une fenêtre',
+        fall: 'Tomber', possess: 'Posséder une fenêtre', gaze: 'Regarder le satellite', satellite: 'Satellite complet (lumière rouge)',
+        victory: 'Victoire', alarm: 'Alerte : venir au pointeur', zap: 'Éclair sur le pointeur', hurt: 'Coup d’erreur',
+        spin: 'Tour sur elle-même', hop: 'Saut', split: 'Ses autres esprits (copies)', curious: 'Pencher la tête', look: 'Regarder autour',
+        turn: 'Se retourner', flinch: 'Sursaut',
+      },
       possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
     };
 
@@ -291,6 +315,10 @@ function rebuildTray() {
     { label: t.teleport, click: () => sendCommand('teleport') },
     { label: t.satellite, click: () => sendCommand('satellite') },
     { label: t.possessNow, click: () => sendCommand('possess') },
+    {
+      label: t.acts,
+      submenu: Object.entries(t.actNames).map(([act, label]) => ({ label, click: () => sendCommand('act', { act }) })),
+    },
     { label: t.demo, click: playDemo },
     { label: cfg.visible ? t.hide : t.show, accelerator: SHORTCUT, click: () => toggleVisible() },
     { type: 'separator' },

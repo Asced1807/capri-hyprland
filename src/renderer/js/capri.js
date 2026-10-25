@@ -507,9 +507,14 @@ export class Capri {
   }
 
   // A short nap: she drifts off, comes apart down to her mask, and wakes up on her own.
-  nap() {
+  // `now`: straight down to her mask (from the tray), instead of dozing off first
+  nap({ now = false } = {}) {
     this.setMode('sleep');
     this.napUntil = performance.now() + rand(40000, 70000);
+    if (now) {
+      this.sleptAt = 0;
+      this.doze();
+    }
   }
 
   wake() {

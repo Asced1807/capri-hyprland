@@ -305,6 +305,43 @@ async function boot() {
         if (cmd.on) capri.stow();
         else capri.unstow();
         break;
+      case 'act': { // the tray's "Animations": each thing she can do, by name
+        if (capri.stowed) {
+          host.setConfig({ visible: true });
+          await capri.unstow();
+        }
+        if (capri.dormant && cmd.act !== 'nap') capri.wake();
+        await until(free, 6000);
+        const here = await host.cursor().catch(() => null);
+        const pointer = here?.inside ? here : { x: innerWidth / 2, y: innerHeight / 2 };
+        const acts = {
+          teleport: () => capri.teleport(capri.spot('random')),
+          peek: () => capri.peek(),
+          sit: () => {
+            const seat = capri.pickSeat();
+            if (seat) return capri.sitOn(seat);
+            return panel.say({ kind: 'info', line: t.noSeat, hold: 4000 });
+          },
+          fall: async () => {
+            await capri.teleport({ x: capri.pos.x, y: innerHeight * 0.45 });
+            capri.fall();
+          },
+          possess: () => capri.possess({ force: true }),
+          gaze: () => capri.gaze(),
+          satellite: () => capri.gaze({ big: true }),
+          nap: () => capri.nap({ now: true }),
+          victory: () => capri.celebrate(),
+          hurt: () => capri.hurt(),
+          alarm: async () => {
+            await capri.summon(pointer);
+            capri.perform('alarm', Math.sign(pointer.x - capri.pos.x) || 1);
+          },
+          zap: () => capri.zap(pointer.x, pointer.y),
+        };
+        if (acts[cmd.act]) acts[cmd.act]();
+        else capri.perform(cmd.act, capri.towardCenter()); // spin, hop, split, curious, look, turn, flinch
+        break;
+      }
       case 'possess': // on demand (tray)
         if (capri.stowed) {
           host.setConfig({ visible: true });

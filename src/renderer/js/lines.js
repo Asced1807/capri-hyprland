@@ -89,6 +89,7 @@ export const LINES = {
     hooksOk: 'Hooks installés. Relance Claude Code et je verrai tout.',
     hooksRemoved: 'Hooks retirés. Je ne vois plus Claude.',
     hooksFail: 'Impossible de toucher aux hooks : {error}',
+    noSeat: 'Aucune fenêtre où m’asseoir : il me faut de la place au-dessus.',
     verbs: {
       Read: 'Lit', Write: 'Écrit', Edit: 'Modifie', MultiEdit: 'Modifie', NotebookEdit: 'Modifie',
       Bash: 'Exécute', PowerShell: 'Exécute', Grep: 'Cherche', Glob: 'Fouille', WebFetch: 'Consulte',
@@ -154,6 +155,7 @@ export const LINES = {
     hooksOk: 'Hooks instalados. Reinicia Claude Code y lo veré todo.',
     hooksRemoved: 'Hooks quitados. Ya no veo a Claude.',
     hooksFail: 'No pude tocar los hooks: {error}',
+    noSeat: 'No hay ventana donde sentarme: necesito sitio encima de ella.',
     verbs: {
       Read: 'Lee', Write: 'Escribe', Edit: 'Edita', MultiEdit: 'Edita', NotebookEdit: 'Edita',
       Bash: 'Ejecuta', PowerShell: 'Ejecuta', Grep: 'Busca', Glob: 'Rastrea', WebFetch: 'Consulta',
@@ -219,6 +221,7 @@ export const LINES = {
     hooksOk: 'Hooks installed. Restart Claude Code and I’ll see everything.',
     hooksRemoved: 'Hooks removed. I can’t see Claude anymore.',
     hooksFail: 'Couldn’t change the hooks: {error}',
+    noSeat: 'No window to sit on: I need room above one.',
     verbs: {
       Read: 'Reads', Write: 'Writes', Edit: 'Edits', MultiEdit: 'Edits', NotebookEdit: 'Edits',
       Bash: 'Runs', PowerShell: 'Runs', Grep: 'Greps', Glob: 'Scans', WebFetch: 'Fetches',
