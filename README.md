@@ -132,14 +132,8 @@ What's different from Windows, and why:
   from Hyprland's IPC socket (about 30 times a second) to know when you're over her body.
 - **Your windows**: read from `j/clients` on the same socket (positions and sizes only), so she can sit on them,
   ride along, fall off and possess them.
-- **Ctrl+Alt+C**: Electron's global shortcuts don't reach Wayland apps. Bind it in Hyprland instead
-  (Lua config, e.g. in `hypr-user.lua`):
-
-  ```lua
-  hl.bind("CTRL + ALT + C", hl.dsp.exec_cmd("curl -s -X POST http://127.0.0.1:47823/toggle"))
-  ```
-
-  or with a `.conf` config: `bind = CTRL ALT, C, exec, curl -s -X POST http://127.0.0.1:47823/toggle`.
+- **Super+Alt+C** instead of Ctrl+Alt+C (which caelestia uses to clear notifications, and Electron's
+  global shortcuts don't reach Wayland apps anyway). She binds it herself at runtime, like the window rule.
 - **Start with the session**: the tray's "Start with Windows" is hidden on Linux. Add it to your autostart:
 
   ```lua
@@ -147,6 +141,8 @@ What's different from Windows, and why:
   ```
 
 - **Language**: she speaks Spanish too (tray › Language › Español).
+- **Your name**: where she'd say *choom* she uses your Linux user name (`asce` → *Asce*), or any name you give
+  her from the tray › *What she calls you*. This works on every platform.
 
 ### Hook her up to Claude Code
 

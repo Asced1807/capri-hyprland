@@ -1,6 +1,22 @@
 // What Capri says. She's a personality construct — dozens of minds in one — so she
 // sometimes talks as "we". Slang is Night City's: choom, preem, nova, flatline.
 
+// She calls you by your name where the lines say "choom" (your Linux user, or the one you
+// gave her), and names the put-away shortcut of this platform.
+export function personalize(lines, { name, shortcut } = {}) {
+  const swap = (v) => {
+    if (typeof v === 'string') {
+      let out = name ? v.replace(/\bchoom\b/g, name).replace(/\bChoom\b/g, name) : v;
+      if (shortcut) out = out.replace(/Ctrl\+Alt\+C/g, shortcut);
+      return out;
+    }
+    if (Array.isArray(v)) return v.map(swap);
+    if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x)]));
+    return v;
+  };
+  return swap(lines);
+}
+
 export const LINES = {
   fr: {
     state: { work: 'EN COURS', done: 'TERMINÉ', alert: 'ATTENTE', error: 'ERREUR', info: 'SYNC', idle: 'VEILLE' },

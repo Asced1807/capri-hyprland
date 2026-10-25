@@ -1,6 +1,6 @@
 // Turns Claude Code hook events into things Capri says and does.
 
-import { LINES } from './lines.js';
+import { LINES, personalize } from './lines.js';
 import { pick, fmt, duration, basename } from './util.js';
 
 const EDIT_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
@@ -10,7 +10,8 @@ const LONG_JOB_MS = 8 * 60 * 1000; // a job this long (or this busy) earns the w
 const LONG_JOB_ACTIONS = 50;
 
 export class Brain {
-  constructor({ capri, panel, voice, host, lang = 'fr' }) {
+  constructor({ capri, panel, voice, host, lang = 'fr', who = {} }) {
+    this.who = who; // { name, shortcut }: what she calls you, and how to put her away
     this.capri = capri;
     this.panel = panel;
     this.voice = voice;
@@ -22,7 +23,12 @@ export class Brain {
   }
 
   get t() {
-    return LINES[this.lang] || LINES.fr;
+    const key = `${this.lang}|${this.who.name}|${this.who.shortcut}`;
+    if (this.tKey !== key) {
+      this.tKey = key;
+      this.tCache = personalize(LINES[this.lang] || LINES.fr, this.who);
+    }
+    return this.tCache;
   }
 
   session(evt) {

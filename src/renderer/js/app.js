@@ -4,7 +4,7 @@ import { Chip, Mask } from './chip.js';
 import { Panel } from './panel.js';
 import { Voice } from './voice.js';
 import { Brain } from './brain.js';
-import { LINES } from './lines.js';
+import { LINES, personalize } from './lines.js';
 import { pick, fmt } from './util.js';
 
 const host = window.host;
@@ -60,7 +60,7 @@ async function boot() {
   capri.possessWindows = config.possess;
   capri.setScale(config.scale);
 
-  const brain = new Brain({ capri, panel, voice, host, lang: config.lang });
+  const brain = new Brain({ capri, panel, voice, host, lang: config.lang, who: { name: config.userName, shortcut: config.shortcut } });
 
   // Click-through everywhere except on her body, the panel and her biochip.
   let interactive = false;
@@ -260,6 +260,7 @@ async function boot() {
     capri.wander = cfg.wander;
     capri.possessWindows = cfg.possess;
     if (cfg.scale !== capri.scale) capri.setScale(cfg.scale);
+    brain.who = { name: cfg.userName, shortcut: cfg.shortcut };
     if (cfg.lang !== brain.lang) {
       brain.lang = cfg.lang;
       panel.labels = LINES[cfg.lang] || LINES.fr;
@@ -336,14 +337,18 @@ async function boot() {
   else await capri.materialize(capri.spot('post'));
   const hooks = await host.hooksStatus();
   if (!hooks.installed) {
-    panel.say({ kind: 'info', line: t0(config.lang).noHooks, hold: 9000 });
+    panel.say({ kind: 'info', line: t0(config).noHooks, hold: 9000 });
   } else {
-    panel.say({ kind: 'info', line: pick(t0(config.lang).online), hold: 4000 });
+    panel.say({ kind: 'info', line: pick(t0(config).online), hold: 4000 });
   }
 }
 
 // boot-time lines that only make sense here
-function t0(lang) {
+function t0({ lang, userName, shortcut }) {
+  return personalize(t0Lines(lang), { name: userName, shortcut });
+}
+
+function t0Lines(lang) {
   if (lang === 'es') {
     return {
       online: ['Capri en línea.', 'De vuelta en tu escritorio, choom.'],

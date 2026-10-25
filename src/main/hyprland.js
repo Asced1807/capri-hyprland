@@ -79,6 +79,20 @@ function luaValue(v) {
 // Matched on the title too: the demo's little terminal is another window of the same app.
 const TITLE = '^(Capri)$';
 const DEMO_TITLE = '^(night-city-api.*)$';
+const NAME_TITLE = '^(Capri · .*)$';
+
+// Super+Alt+C puts her away (Ctrl+Alt+C is caelestia's "clear notifications").
+// Goes through the bridge, like a hook would.
+const BIND = { mods: 'SUPER + ALT', modmask: 64 + 8, key: 'C' };
+const TOGGLE = `curl -s -X POST http://127.0.0.1:${Number(process.env.CAPRI_PORT) || 47823}/toggle`;
+
+async function applyBind(lua) {
+  // already there (Capri restarted without a reload): binding it twice would toggle twice
+  const binds = await request('j/binds').catch(() => []);
+  if (binds.some((b) => b.modmask === BIND.modmask && b.key.toUpperCase() === BIND.key)) return;
+  if (lua) report(await hyprctl(['eval', `hl.bind(${JSON.stringify(`${BIND.mods} + ${BIND.key}`)}, hl.dsp.exec_cmd(${JSON.stringify(TOGGLE)}))`]));
+  else report(await hyprctl(['keyword', 'bind', `${BIND.mods.replace(' + ', ' ')}, ${BIND.key}, exec, ${TOGGLE}`]));
+}
 
 async function applyWindowRules(className) {
   const status = await hyprctl(['status']);
@@ -88,12 +102,16 @@ async function applyWindowRules(className) {
     report(await hyprctl(['eval', `hl.window_rule({ name = "capri-overlay", match = { class = ${JSON.stringify(match)}, title = ${JSON.stringify(TITLE)} }, ${props} })`]));
     // the demo's little terminal: floating at its own size, so she can sit on it and possess it
     report(await hyprctl(['eval', `hl.window_rule({ name = "capri-demo", match = { class = ${JSON.stringify(match)}, title = ${JSON.stringify(DEMO_TITLE)} }, float = true, size = "620 300", no_initial_focus = true })`]));
+    report(await hyprctl(['eval', `hl.window_rule({ name = "capri-name", match = { class = ${JSON.stringify(match)}, title = ${JSON.stringify(NAME_TITLE)} }, float = true, size = "380 170" })`]));
+    await applyBind(true);
     return 'lua';
   }
   // hyprlang (.conf), windowrule v3 syntax (Hyprland 0.53+)
   const props = Object.entries(RULE).map(([k, v]) => `${k} ${v === true ? 'on' : v}`).join(', ');
   report(await hyprctl(['keyword', 'windowrule', `${props}, match:class ${match}, match:title ${TITLE}`]));
   report(await hyprctl(['keyword', 'windowrule', `float on, size 620 300, no_initial_focus on, match:class ${match}, match:title ${DEMO_TITLE}`]));
+  report(await hyprctl(['keyword', 'windowrule', `float on, size 380 170, match:class ${match}, match:title ${NAME_TITLE}`]));
+  await applyBind(false);
   return 'conf';
 }
 

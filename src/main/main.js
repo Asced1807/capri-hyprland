@@ -1,5 +1,6 @@
 'use strict';
 
+const os = require('node:os');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -19,6 +20,9 @@ const DEV = process.argv.includes('--dev');
 const HYPR = isHyprland();
 // the Wayland app id, what the Hyprland window rule matches
 const APP_CLASS = 'capri-desktop';
+// put her away / bring her back. Ctrl+Alt+C is caelestia's "clear notifications" on Hyprland,
+// and Electron's global shortcuts don't reach Wayland anyway: the compositor binds this one.
+const SHORTCUT = HYPR ? 'Super+Alt+C' : 'Ctrl+Alt+C';
 const PORT = Number(process.env.CAPRI_PORT) || 47823;
 const SOUND_EXT = /\.(mp3|wav|ogg|m4a)$/i;
 
@@ -175,10 +179,53 @@ function resolveLang(setting) {
   return 'en';
 }
 
-// What the overlay gets: `lang` is the resolved one, `langSetting` what the user picked.
+// Your system user name, "asce" -> "Asce"
+function systemUserName() {
+  let user = '';
+  try {
+    user = os.userInfo().username;
+  } catch {
+    user = process.env.USER || process.env.USERNAME || '';
+  }
+  return user ? user[0].toUpperCase() + user.slice(1) : '';
+}
+
+// What the overlay gets: `lang` is the resolved one, `langSetting` what the user picked,
+// `userName` what she calls you.
 function rendererConfig() {
   const cfg = config.load();
-  return { ...cfg, lang: resolveLang(cfg.lang), langSetting: cfg.lang };
+  const userName = (cfg.name || '').trim() || systemUserName();
+  return { ...cfg, lang: resolveLang(cfg.lang), langSetting: cfg.lang, userName, shortcut: SHORTCUT };
+}
+
+// A small window to type the name she calls you (tray menus can't take text).
+let nameWin = null;
+function askName(t) {
+  if (nameWin) return nameWin.focus();
+  const current = (config.load().name || '').trim();
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Capri · ${t.name}</title></head>
+<body style="margin:0;background:#14101c;color:#e9e4f5;font:14px system-ui,sans-serif;padding:18px">
+<form id="f"><label for="n">${t.nameAsk}</label>
+<input id="n" maxlength="40" placeholder="${systemUserName()}" style="display:block;width:100%;box-sizing:border-box;margin:10px 0;padding:8px;background:#1f1a2b;color:#fff;border:1px solid #6b3fd4;border-radius:4px;font:inherit">
+<button style="padding:6px 16px;background:#ff2b4f;color:#fff;border:0;border-radius:4px;font:inherit;cursor:pointer">${t.nameSave}</button></form>
+<script>
+const n = document.getElementById('n');
+n.value = ${JSON.stringify(current).replace(/</g, '\\u003c')};
+n.focus();
+document.getElementById('f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await window.host.setConfig({ name: n.value.trim() });
+  window.close();
+});
+addEventListener('keydown', (e) => { if (e.key === 'Escape') window.close(); });
+</script></body></html>`;
+  nameWin = new BrowserWindow({
+    width: 380, height: 170, resizable: false, minimizable: false, maximizable: false, autoHideMenuBar: true,
+    backgroundColor: '#14101c', title: `Capri · ${t.name}`,
+    webPreferences: { preload: path.join(__dirname, '..', 'preload.js'), contextIsolation: true, sandbox: true },
+  });
+  nameWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  nameWin.on('closed', () => { nameWin = null; });
 }
 
 function updateConfig(patch) {
@@ -201,6 +248,7 @@ function rebuildTray() {
       soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse cuando no hay nada', possess: 'Poseer mis ventanas',
       lang: 'Idioma', auto: 'Automático (sistema)', startup: 'Arrancar con el sistema', hooksOn: 'Hooks de Claude Code: instalados',
       hooksOff: 'Instalar hooks de Claude Code', hooksRemove: 'Quitar hooks de Claude Code', quit: 'Salir',
+      name: 'Cómo me llamas', nameUser: 'Mi usuario', nameOther: 'Otro nombre…', nameAsk: '¿Cómo quieres que te llame?', nameSave: 'Guardar',
     }
     : lang === 'en'
     ? {
@@ -209,6 +257,7 @@ function rebuildTray() {
       soundsDir: 'Open custom sounds folder', screen: 'Screen', wander: 'Wander around when idle', possess: 'Possess my windows',
       lang: 'Language', auto: 'Automatic (system)', startup: 'Start with Windows', hooksOn: 'Claude Code hooks: installed',
       hooksOff: 'Install Claude Code hooks', hooksRemove: 'Remove Claude Code hooks', quit: 'Quit',
+      name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
     }
     : {
       online: `Capri — à l'écoute sur ${PORT}`, teleport: 'Téléporter', satellite: 'Regarder le satellite', demo: 'Lancer la démo', show: 'La faire revenir', hide: 'La ranger',
@@ -216,6 +265,7 @@ function rebuildTray() {
       soundsDir: 'Ouvrir le dossier des sons perso', screen: 'Écran', wander: 'Se balader quand rien ne se passe', possess: 'Posséder mes fenêtres',
       lang: 'Langue', auto: 'Automatique (système)', startup: 'Lancer au démarrage', hooksOn: 'Hooks Claude Code : installés',
       hooksOff: 'Installer les hooks Claude Code', hooksRemove: 'Retirer les hooks Claude Code', quit: 'Quitter',
+      name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
     };
 
   const displays = screen.getAllDisplays();
@@ -227,7 +277,7 @@ function rebuildTray() {
     { label: t.teleport, click: () => sendCommand('teleport') },
     { label: t.satellite, click: () => sendCommand('satellite') },
     { label: t.demo, click: playDemo },
-    { label: cfg.visible ? t.hide : t.show, accelerator: 'Ctrl+Alt+C', click: () => toggleVisible() },
+    { label: cfg.visible ? t.hide : t.show, accelerator: SHORTCUT, click: () => toggleVisible() },
     { type: 'separator' },
     {
       label: t.size,
@@ -261,6 +311,15 @@ function rebuildTray() {
     },
     { label: t.wander, type: 'checkbox', checked: cfg.wander, click: (item) => updateConfig({ wander: item.checked }) },
     { label: t.possess, type: 'checkbox', checked: cfg.possess, click: (item) => updateConfig({ possess: item.checked }) },
+    {
+      label: t.name,
+      submenu: [
+        { label: `${t.nameUser} (${systemUserName()})`, type: 'radio', checked: !(cfg.name || '').trim(), click: () => updateConfig({ name: '' }) },
+        ...((cfg.name || '').trim() ? [{ label: cfg.name.trim(), type: 'radio', checked: true }] : []),
+        { type: 'separator' },
+        { label: t.nameOther, click: () => askName(t) },
+      ],
+    },
     {
       label: t.lang,
       submenu: [[t.auto, 'auto'], ['Español', 'es'], ['Français', 'fr'], ['English', 'en']].map(([label, lang]) => ({
@@ -425,7 +484,7 @@ function main() {
       onToggle: () => toggleVisible(),
       onDebug: DEV ? debugHandler : null,
     });
-    globalShortcut.register('Control+Alt+C', () => toggleVisible());
+    if (!HYPR) globalShortcut.register('Control+Alt+C', () => toggleVisible());
     screen.on('display-metrics-changed', fitOverlay);
     screen.on('display-added', () => { fitOverlay(); rebuildTray(); });
     screen.on('display-removed', () => { fitOverlay(); rebuildTray(); });
