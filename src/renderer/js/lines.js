@@ -89,6 +89,24 @@ export const LINES = {
     hooksOk: 'Hooks installés. Relance Claude Code et je verrai tout.',
     hooksRemoved: 'Hooks retirés. Je ne vois plus Claude.',
     hooksFail: 'Impossible de toucher aux hooks : {error}',
+    // by the hour, at the start of a session
+    timeOfDay: {
+      morning: ['Bonjour, choom. Un café d’abord ?', 'Nouveau matin, nouveau code. Je surveille {project}.', 'Debout. Night City est déjà réveillée.'],
+      afternoon: ['Bon après-midi, choom. On casse quoi aujourd’hui ?', 'Après-midi de boulot sur {project}. Je suis là.'],
+      night: ['Bonsoir, choom. Les lumières de la ville sont allumées.', 'Service de nuit sur {project}. Mon préféré.'],
+      late: ['À cette heure-ci et on continue ? Night City ne dort jamais… toi, tu devrais.', 'Petit matin. Juste toi, moi et le satellite.'],
+    },
+    lateNight: ['Il est tard, choom. Encore un et au lit, d’accord ?', 'Encore le petit matin. Moi je ne fatigue pas, toi si.'],
+    // after a command that went well
+    commands: {
+      push: ['Envoyé sur le Net. Preem.', 'Push fait. C’est en ligne.'],
+      commit: ['Commit signé.', 'Un de plus dans l’historique.'],
+      tests: ['Tests au vert. Preem.', 'Tout passe. Pas un échec.'],
+      system: ['Système à jour. Croisons les doigts.', 'Paquets à jour.'],
+      docker: ['Conteneurs lancés.', 'La flotte de conteneurs est prête.'],
+      deps: ['Dépendances installées.', 'Nouvelles pièces dans le système.'],
+      build: ['Compilé. Pas d’étincelles.', 'Build terminé.'],
+    },
     noSeat: 'Aucune fenêtre où m’asseoir : il me faut de la place au-dessus.',
     verbs: {
       Read: 'Lit', Write: 'Écrit', Edit: 'Modifie', MultiEdit: 'Modifie', NotebookEdit: 'Modifie',
@@ -155,6 +173,24 @@ export const LINES = {
     hooksOk: 'Hooks instalados. Reinicia Claude Code y lo veré todo.',
     hooksRemoved: 'Hooks quitados. Ya no veo a Claude.',
     hooksFail: 'No pude tocar los hooks: {error}',
+    // by the hour, at the start of a session
+    timeOfDay: {
+      morning: ['Buenos días, choom. ¿Café primero?', 'Mañana nueva, código nuevo. Vigilo {project}.', 'Arriba. Night City ya está despierta.'],
+      afternoon: ['Buenas tardes, choom. ¿Qué rompemos hoy?', 'Tarde de trabajo en {project}. Aquí estoy.'],
+      night: ['Buenas noches, choom. Las luces de la ciudad ya están encendidas.', 'Turno de noche en {project}. Mi favorito.'],
+      late: ['¿A estas horas y seguimos? Night City nunca duerme… tú deberías.', 'Madrugada. Solo tú, yo y el satélite.'],
+    },
+    lateNight: ['Es tarde, choom. Uno más y a dormir, ¿vale?', 'Madrugada otra vez. Yo no me canso, pero tú sí.'],
+    // after a command that went well
+    commands: {
+      push: ['Subido al Net. Preem.', 'Push hecho. Ya está ahí fuera.'],
+      commit: ['Commit firmado.', 'Otro commit al historial.'],
+      tests: ['Tests en verde. Preem.', 'Todo pasa. Ni un fallo.'],
+      system: ['Sistema actualizado. Crucemos los dedos.', 'Paquetes al día.'],
+      docker: ['Contenedores arriba.', 'La flota de contenedores está lista.'],
+      deps: ['Dependencias instaladas.', 'Piezas nuevas en el sistema.'],
+      build: ['Compilado. Sin chispas.', 'Build terminado.'],
+    },
     noSeat: 'No hay ventana donde sentarme: necesito sitio encima de ella.',
     verbs: {
       Read: 'Lee', Write: 'Escribe', Edit: 'Edita', MultiEdit: 'Edita', NotebookEdit: 'Edita',
@@ -221,6 +257,24 @@ export const LINES = {
     hooksOk: 'Hooks installed. Restart Claude Code and I’ll see everything.',
     hooksRemoved: 'Hooks removed. I can’t see Claude anymore.',
     hooksFail: 'Couldn’t change the hooks: {error}',
+    // by the hour, at the start of a session
+    timeOfDay: {
+      morning: ['Morning, choom. Coffee first?', 'New morning, new code. Watching {project}.', 'Up. Night City’s awake already.'],
+      afternoon: ['Afternoon, choom. What are we breaking today?', 'Afternoon shift on {project}. I’m here.'],
+      night: ['Evening, choom. The city lights are on.', 'Night shift on {project}. My favourite.'],
+      late: ['This late and still at it? Night City never sleeps… you should.', 'Small hours. Just you, me and the satellite.'],
+    },
+    lateNight: ['It’s late, choom. One more and bed, deal?', 'Small hours again. I don’t get tired, you do.'],
+    // after a command that went well
+    commands: {
+      push: ['Pushed to the Net. Preem.', 'Push done. It’s out there.'],
+      commit: ['Commit signed.', 'Another one for the history.'],
+      tests: ['Tests are green. Preem.', 'All passing. Not one failure.'],
+      system: ['System updated. Fingers crossed.', 'Packages up to date.'],
+      docker: ['Containers are up.', 'The container fleet is ready.'],
+      deps: ['Dependencies installed.', 'New parts in the system.'],
+      build: ['Built. No sparks.', 'Build done.'],
+    },
     noSeat: 'No window to sit on: I need room above one.',
     verbs: {
       Read: 'Reads', Write: 'Writes', Edit: 'Edits', MultiEdit: 'Edits', NotebookEdit: 'Edits',

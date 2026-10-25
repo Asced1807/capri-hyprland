@@ -9,6 +9,25 @@ const WORKING_EVERY = 20; // say something about progress every N tool calls
 const LONG_JOB_MS = 8 * 60 * 1000; // a job this long (or this busy) earns the whole satellite sequence
 const LONG_JOB_ACTIONS = 50;
 
+// Commands she has a word for when they go well, first match wins.
+const COMMANDS = [
+  [/\bgit\s+push\b/, 'push'],
+  [/\bgit\s+commit\b/, 'commit'],
+  [/\b(npm|pnpm|yarn|bun)\s+(run\s+)?test\b|\bpytest\b|\bcargo\s+test\b|\bgo\s+test\b|\bvitest\b|\bjest\b/, 'tests'],
+  [/\b(pacman|paru|yay)\s+-S/, 'system'],
+  [/\bdocker(\s+compose|-compose)?\s+(up|run|build)\b/, 'docker'],
+  [/\b(npm|pnpm|yarn|bun)\s+(install|i|add)\b|\bpip\s+install\b|\buv\s+(add|sync)\b/, 'deps'],
+  [/\b(npm|pnpm|yarn|bun)\s+run\s+build\b|\bcargo\s+build\b|\bmake\b/, 'build'],
+];
+
+// morning, afternoon, night, or the small hours
+function partOfDay(hour = new Date().getHours()) {
+  if (hour < 6) return 'late';
+  if (hour < 12) return 'morning';
+  if (hour < 19) return 'afternoon';
+  return 'night';
+}
+
 export class Brain {
   constructor({ capri, panel, voice, host, lang = 'fr', who = {} }) {
     this.who = who; // { name, shortcut }: what she calls you, and how to put her away
@@ -75,6 +94,7 @@ export class Brain {
       case 'SessionStart': return this.onSessionStart(evt, s);
       case 'UserPromptSubmit': return this.onPrompt(evt, s);
       case 'PreToolUse': return this.onTool(evt, s);
+      case 'PostToolUse': return this.onToolDone(evt, s);
       case 'PostToolUseFailure': return this.onToolFailure(evt, s);
       case 'Notification': return this.onNotification(evt, s);
       case 'Stop': return this.onStop(evt, s);
@@ -89,7 +109,8 @@ export class Brain {
 
   onSessionStart(evt, s) {
     if (evt.source === 'clear' || evt.source === 'compact') return;
-    const lines = evt.source === 'resume' ? this.t.resume : this.t.hello;
+    let lines = evt.source === 'resume' ? this.t.resume : this.t.hello;
+    if (evt.source !== 'resume' && Math.random() < 0.7) lines = this.t.timeOfDay[partOfDay()];
     this.voice.play('hello');
     this.capri.perform('curious', this.capri.towardCenter());
     this.say('info', fmt(pick(lines), { project: s.project }), s, { hold: 5000 });
@@ -101,7 +122,13 @@ export class Brain {
     Object.assign(s, { taskStart: Date.now(), count: 0, files: new Set(), log: [], working: true, window });
     this.capri.goToWork(); // perched on the window in front if she can, else her corner
     const prompt = String(evt.prompt || '').replace(/\s+/g, ' ').trim();
-    this.say('work', pick(this.t.prompt), s, { quote: prompt ? clip(prompt, 110) : '', hold: 4500 });
+    // in the small hours, now and then, she says so
+    let line = pick(this.t.prompt);
+    if (partOfDay() === 'late' && Date.now() - (this.lastLate || 0) > 45 * 60 * 1000) {
+      this.lastLate = Date.now();
+      line = pick(this.t.lateNight);
+    }
+    this.say('work', line, s, { quote: prompt ? clip(prompt, 110) : '', hold: 4500 });
   }
 
   onTool(evt, s) {
@@ -123,6 +150,17 @@ export class Brain {
     if (s.count % WORKING_EVERY === 0) {
       this.say('work', fmt(pick(this.t.working), { count: s.count }), s, { log: s.log, hold: 4000 });
     }
+  }
+
+  // A command that went well and means something (a push, green tests, an update…): a word on it,
+  // not more than one every 20 seconds.
+  onToolDone(evt, s) {
+    if (evt.tool_name !== 'Bash') return;
+    const command = String(evt.tool_input?.command || '');
+    const hit = COMMANDS.find(([re]) => re.test(command));
+    if (!hit || Date.now() - (this.lastCommandLine || 0) < 20000) return;
+    this.lastCommandLine = Date.now();
+    this.say('info', pick(this.t.commands[hit[1]]), s, { hold: 3500 });
   }
 
   onToolFailure(evt, s) {
