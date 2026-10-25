@@ -604,6 +604,21 @@ async function debugHandler(route, body) {
     }
     return { ok: true };
   }
+  if (route === 'drag') {
+    // a stand-in pointer pressing at the first point, moving through the others, releasing at
+    // the last: { points: [[x, y], ...], every: ms between moves }, css px over the overlay
+    const pts = (body.points || []).map(([x, y]) => ({ x: Math.round(x), y: Math.round(y) }));
+    if (pts.length < 2) throw new Error('drag needs at least two points');
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    overlay.webContents.sendInputEvent({ type: 'mouseMove', ...pts[0] });
+    overlay.webContents.sendInputEvent({ type: 'mouseDown', button: 'left', clickCount: 1, ...pts[0] });
+    for (const pt of pts.slice(1)) {
+      await wait(body.every ?? 16);
+      overlay.webContents.sendInputEvent({ type: 'mouseMove', button: 'left', ...pt });
+    }
+    overlay.webContents.sendInputEvent({ type: 'mouseUp', button: 'left', clickCount: 1, ...pts[pts.length - 1] });
+    return { ok: true };
+  }
   if (route === 'capture') {
     const image = await overlay.webContents.capturePage();
     // installed, the app's own folder is read-only: its data folder instead
@@ -640,6 +655,7 @@ function main() {
         onUpdate,
         onPointer: (p) => overlay?.webContents.send('overlay:pointer', p),
         onFullscreen: (on) => { quietFrom.fullscreen = on; updateQuiet(); },
+        onWorkspace: () => sendCommand('workspace'),
         isPressed: () => pressed,
       })
       : startWindowWatch({ overlay, onUpdate });

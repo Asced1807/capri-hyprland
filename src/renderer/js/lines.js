@@ -107,6 +107,7 @@ export const LINES = {
       deps: ['Dépendances installées.', 'Nouvelles pièces dans le système.'],
       build: ['Compilé. Pas d’étincelles.', 'Build terminé.'],
     },
+    pet: ['…ne touche pas à mes cheveux.', 'Mmh. Bon, encore un peu.', 'On est des dizaines là-dedans, et tous rougissent.'],
     noSeat: 'Aucune fenêtre où m’asseoir : il me faut de la place au-dessus.',
     verbs: {
       Read: 'Lit', Write: 'Écrit', Edit: 'Modifie', MultiEdit: 'Modifie', NotebookEdit: 'Modifie',
@@ -191,6 +192,7 @@ export const LINES = {
       deps: ['Dependencias instaladas.', 'Piezas nuevas en el sistema.'],
       build: ['Compilado. Sin chispas.', 'Build terminado.'],
     },
+    pet: ['…no me toques el pelo.', 'Mmh. Vale, un poco más.', 'Somos decenas aquí dentro, y todas nos sonrojamos.'],
     noSeat: 'No hay ventana donde sentarme: necesito sitio encima de ella.',
     verbs: {
       Read: 'Lee', Write: 'Escribe', Edit: 'Edita', MultiEdit: 'Edita', NotebookEdit: 'Edita',
@@ -275,6 +277,7 @@ export const LINES = {
       deps: ['Dependencies installed.', 'New parts in the system.'],
       build: ['Built. No sparks.', 'Build done.'],
     },
+    pet: ['…don’t touch my hair.', 'Mmh. Fine, a little more.', 'There are dozens of us in here, and we’re all blushing.'],
     noSeat: 'No window to sit on: I need room above one.',
     verbs: {
       Read: 'Reads', Write: 'Writes', Edit: 'Edits', MultiEdit: 'Edits', NotebookEdit: 'Edits',

@@ -151,7 +151,7 @@ function keepWindowRules(className, onReload = () => {}) {
 
 // Same feed as the Windows helper: { fg, wins } with the visible windows front first,
 // in overlay coordinates. Plus the pointer, which Wayland won't forward to a click-through window.
-function startHyprlandWatch({ overlay, onUpdate, onPointer, onFullscreen = () => {}, isPressed = () => false }) {
+function startHyprlandWatch({ overlay, onUpdate, onPointer, onFullscreen = () => {}, onWorkspace = () => {}, isPressed = () => false }) {
   let stopped = false;
   let origin = { x: 0, y: 0, monitor: null };
   let lastSnap = '';
@@ -160,6 +160,7 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer, onFullscreen = () =>
   let selfAddress = null;
   let passThrough = true; // what the rule starts with
   let fullscreen = null; // a fullscreen window on the screen you see (a game, a video)
+  let workspace = null; // the one shown on her screen
   let lastPointer = '';
   let pointer = { x: 0, y: 0, inside: false };
 
@@ -180,6 +181,9 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer, onFullscreen = () =>
     if (!monitor) return;
     origin = self ? { x: self.at[0], y: self.at[1], monitor: monitor.id } : { x: monitor.x, y: monitor.y, monitor: monitor.id };
     const special = monitor.specialWorkspace?.id || 0;
+    const ws = monitor.activeWorkspace?.id;
+    if (workspace !== null && ws !== workspace) onWorkspace(ws);
+    workspace = ws;
     const shown = new Set([monitor.activeWorkspace?.id, special].filter(Boolean));
     const { w: vw, h: vh } = bounds();
 

@@ -141,6 +141,16 @@ What's different from Windows, and why:
   ```
 
 - **Language**: she speaks Spanish too (tray › Language › Español).
+- **New in this fork** (tray toggles, all on by default):
+  - *Only with an AI agent open*: she leaves 45 s after the last Claude Code / opencode session ends, or after
+    20 min without agent activity; the next session or prompt brings her back.
+  - *Hide in fullscreen and games*: into her biochip while something is fullscreen on your screen or gamemode is on.
+  - *Dance to my music*: she dances while a music player plays (MPRIS via `playerctl`; browsers are left out).
+  - Throw her: let go of her while moving and she flies, bouncing off the sides of the screen.
+  - Pet her: go slowly over her mane a few times and she blushes.
+  - She follows you to another workspace, out of the black slit with the red line.
+  - Lines by the hour, and for commands that went well (git push, tests, pacman/paru, docker, builds…).
+  - Tray › *Animations*: every one of her moves by name, on demand.
 - **Your name**: where she'd say *choom* she uses your Linux user name (`maria` → *Maria*), or any name you give
   her from the tray › *What she calls you*. This works on every platform.
 

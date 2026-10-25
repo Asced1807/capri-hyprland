@@ -28,6 +28,8 @@ const today = () => {
 const GREEN = [0.21, 1, 0.48];
 const INK = [0.08, 0.06, 0.11];
 const RED = [1, 0.13, 0.32];
+const BLUSH = [1, 0.42, 0.72];
+const THROW_SPEED = 700; // px/s: let go faster than this and she flies
 
 export class Capri {
   constructor({ root, canvas, image, fx, voice }) {
@@ -55,6 +57,11 @@ export class Capri {
     this.lively = true; // tray: "Livelier": more going on when nothing's happening, short naps
     this.napUntil = 0; // a nap she wakes up from on her own
     this.music = false; // something's playing (main process, from MPRIS): she dances when idle
+    this.vx = 0; // thrown: sideways speed while she flies, px/s
+    this.trail = []; // the last pointer positions while dragged, to throw her
+    this.petting = { amount: 0, last: null, until: 0 }; // a hand going over her head, slowly
+    this.nextPet = 0;
+    this.nextFollow = 0;
     this.dragging = false;
 
     this.p = {
@@ -1330,6 +1337,7 @@ export class Capri {
     this.landingSpot = this.landing();
     this.setStance('fall');
     this.vy = 0;
+    this.vx = 0;
     this.lastFall = performance.now();
     if (reducedMotion.matches) this.updateFall(this.lastFall + 10000);
   }
@@ -1339,11 +1347,13 @@ export class Capri {
     const dt = Math.min(0.05, (now - this.lastFall) / 1000);
     this.lastFall = now;
     this.vy = Math.min(this.vy + GRAVITY * dt, 1900);
+    if (this.vx) this.flyAcross(dt);
     const y = reducedMotion.matches ? target.y : this.pos.y + this.vy * dt;
-    if (y < target.y) {
+    if (y < target.y || this.vy < 0) {
       this.pos.y = y;
       return;
     }
+    this.vx = 0;
     this.pos.y = target.y;
     this.setStance(target.stance, { perch: target.perch });
     const s = this.scale;
@@ -1358,6 +1368,98 @@ export class Capri {
     p.glitchSeed = Math.random() * 100;
     p.glitch = 0.3;
     setTimeout(() => { p.glitch = 0; }, ON_ONES * 3);
+  }
+
+  // Thrown: she flies with the speed you let go of her at, bouncing off the sides of the screen
+  // and its top, and lands (on a window ledge if one catches her) like after a fall.
+  throw(vx, vy) {
+    if (reducedMotion.matches) return this.fall();
+    this.setStance('fall');
+    this.vx = clamp(vx, -2600, 2600);
+    this.vy = clamp(vy, -2200, 1800);
+    this.lastFall = performance.now();
+    this.landingSpot = this.landing();
+    this.voice.play('teleport-out');
+    const p = this.p;
+    p.split = 6;
+    p.glitch = 0.25;
+    tween(p, { split: 0, glitch: 0 }, 500, ease.out);
+    return undefined;
+  }
+
+  flyAcross(dt) {
+    const s = this.scale;
+    const { w } = this.view;
+    this.vx *= 0.995;
+    let x = this.pos.x + this.vx * dt;
+    const side = 40;
+    if (x < side || x > w - side) {
+      x = clamp(x, side, w - side);
+      this.vx = -this.vx * 0.6; // off the edge of the screen, losing some speed
+      this.bounce(x < w / 2 ? 'left' : 'right');
+    }
+    const top = this.pos.y - SPRITE.height * s;
+    if (top < 0 && this.vy < 0) {
+      this.vy = -this.vy * 0.5; // the top of the screen
+      this.bounce('top');
+    }
+    this.pos.x = x;
+    if (this.vy > 0) this.landingSpot = this.landing(); // the ledge under her now
+    if (Math.abs(this.vx) < 30) this.vx = 0;
+  }
+
+  bounce(side) {
+    const s = this.scale;
+    const h = this.head();
+    this.voice.play('land');
+    this.fx.burst(side === 'top' ? h.x : this.pos.x, side === 'top' ? h.top : h.y, { count: 8, power: 0.5, spread: 50 * s });
+    this.p.glitchSeed = Math.random() * 100;
+  }
+
+  // A hand going slowly over her head, again and again: her mane bristles and she blushes.
+  pet(x, y) {
+    const now = performance.now();
+    if (this.busy || this.hidden || this.stance === 'fall' || now < this.nextPet) return;
+    const h = this.head();
+    // on her mane or her head: her own pixels, the upper part of her
+    const near = this.hit(x, y) && y < h.y + 40 * this.scale;
+    const pt = this.petting;
+    if (!near || now > pt.until) pt.amount = 0;
+    if (near && pt.last) {
+      const step = Math.hypot(x - pt.last.x, y - pt.last.y);
+      if (step < 40) pt.amount += step; // slowly: a quick swipe isn't a pet
+    }
+    pt.last = near ? { x, y } : null;
+    pt.until = now + 1500;
+    if (pt.amount < 400) return;
+    pt.amount = 0;
+    this.nextPet = now + 40000;
+    this.wake();
+    const p = this.p;
+    p.sil = BLUSH;
+    p.silAmount = 0.35;
+    tween(p, { silAmount: 0 }, 1400, ease.out);
+    this.perform('curious', x < this.pos.x ? -1 : 1);
+    this.fx.burst(h.x, h.y - 40 * this.scale, { count: 6, power: 0.3, spread: 40 * this.scale });
+    this.onPet?.();
+  }
+
+  // You switched workspaces: she comes along, out of the black slit with the red line in it.
+  followWorkspace() {
+    const now = performance.now();
+    if (now < this.nextFollow || this.busy || this.hidden || this.stowed || this.dormant) return;
+    if (this.stance === 'fall' || this.stance === 'peek' || this.stance === 'sit') return;
+    this.nextFollow = now + 2500;
+    const s = this.scale;
+    const h = this.head();
+    this.fx.slit(this.pos.x, h.top, this.pos.y, { width: 56 * s + 10 });
+    this.voice.play('teleport-in');
+    const p = this.p;
+    p.glitchSeed = Math.random() * 100;
+    p.glitch = 0.5;
+    p.split = 5;
+    tween(p, { glitch: 0, split: 0 }, 350, ease.out);
+    this.perform('hop');
   }
 
   // First appearance: drop in from the top of the screen.
@@ -1420,6 +1522,9 @@ export class Capri {
     window.addEventListener('mousemove', (e) => {
       this.mouse = { x: e.clientX, y: e.clientY }; // a window she's in watches it
       if (down) {
+        const t = performance.now();
+        this.trail.push({ x: e.clientX, y: e.clientY, t });
+        while (this.trail.length > 2 && t - this.trail[0].t > 90) this.trail.shift();
         const dx = e.clientX - down.x, dy = e.clientY - down.y;
         if (!this.dragging && Math.hypot(dx, dy) > 5 && !this.busy) {
           this.dragging = true;
@@ -1444,7 +1549,9 @@ export class Capri {
         return;
       }
       this.notice(e.clientX, e.clientY);
+      this.pet(e.clientX, e.clientY);
     });
+    window.addEventListener('mousedown', () => { this.trail = []; });
     window.addEventListener('mouseup', () => {
       if (!down) return;
       const wasDragging = this.dragging;
@@ -1462,6 +1569,13 @@ export class Capri {
 
   // Let go of her: onto a ledge if her hips are right at one, otherwise she falls.
   drop() {
+    // let go while moving fast: she's thrown
+    const a = this.trail[0], b = this.trail[this.trail.length - 1];
+    this.trail = [];
+    if (a && b && b.t - a.t > 10) {
+      const vx = ((b.x - a.x) / (b.t - a.t)) * 1000, vy = ((b.y - a.y) / (b.t - a.t)) * 1000;
+      if (Math.hypot(vx, vy) > THROW_SPEED) return this.throw(vx, vy);
+    }
     const s = this.scale;
     const hip = this.pos.y - (SPRITE.feet.y - SPRITE.hip) * s;
     for (const win of this.windows.wins) {

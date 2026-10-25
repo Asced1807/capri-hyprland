@@ -156,6 +156,7 @@ async function boot() {
     // she may have moved out from under a still pointer: never leave a dead click zone behind
     refreshHit();
   };
+  capri.onPet = () => panel.say({ kind: 'info', line: pick(brain.t.pet), hold: 3500 });
   capri.onTeleport = (phase) => (phase === 'start' ? panel.suspend() : panel.resume());
   capri.chipAt = () => chip.center();
   capri.onStow = () => {
@@ -300,6 +301,9 @@ async function boot() {
         break;
       case 'status':
         brain.status();
+        break;
+      case 'workspace': // you switched workspaces: she comes along
+        capri.followWorkspace();
         break;
       case 'music': // something started or stopped playing
         capri.music = cmd.on;
