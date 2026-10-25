@@ -62,7 +62,8 @@ On Linux every toggle says *on* / *off* in its label, since most trays don't dra
 |---|---|---|
 | **Only with an AI agent open** | on | She leaves 45 s after the last Claude Code / opencode session ends, or after 20 min without agent activity; the next session or prompt brings her back |
 | **Hide in fullscreen and games** | on | Into her biochip while something is fullscreen on your screen (a game, a video) or gamemode is on |
-| **Dance to my music** | on | Dances while a music player plays (MPRIS, through `playerctl`); browsers are left out, so she won't dance through your videos |
+| **Dance to my music** | on | Dances while a music player plays (MPRIS, through `playerctl`) |
+| **Dance to the browser too** | off | Also when the music comes from a browser (YouTube…); off by default because a video and a song look the same from there (a fullscreen video hides her anyway) |
 | **Livelier** | on | Busier when nothing's happening, with short naps |
 | **Possess a window** | | Right now, on the window you're on |
 | **Hide her (Super+Alt+C)** | | Into her biochip in the bottom-left corner; again to bring her back |

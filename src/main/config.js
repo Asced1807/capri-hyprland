@@ -14,7 +14,8 @@ const DEFAULTS = {
   possess: true,     // now and then she dives into the window she sits on and takes it over
   visible: true,
   lively: true,
-  dance: true,       // dances while a music player (not a browser) is playing
+  dance: true,       // dances while a music player is playing
+  danceBrowsers: false, // ...a browser too (a video and a song look the same from there)
   quiet: true,       // hides in her biochip while something is fullscreen or gamemode is on
   withAgents: true,  // she leaves when no AI agent (Claude Code, opencode) is around; they bring her back      // more going on when nothing's happening, and short naps
   name: '',          // what she calls you; empty = your system user name

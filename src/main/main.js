@@ -255,7 +255,7 @@ function rebuildTray() {
   const t = lang === 'es'
     ? {
       online: `Capri — escuchando en ${PORT}`, teleport: 'Teletransportar', satellite: 'Mirar el satélite', demo: 'Ver la demo', show: 'Traerla de vuelta', hide: 'Esconderla',
-      withAgents: 'Solo con una IA abierta', quiet: 'Esconderse en pantalla completa y juegos', dance: 'Bailar con mi música',
+      withAgents: 'Solo con una IA abierta', quiet: 'Esconderse en pantalla completa y juegos', dance: 'Bailar con mi música', danceBrowsers: 'Bailar también con el navegador',
       size: 'Tamaño', small: 'Pequeña', medium: 'Mediana', large: 'Grande', sound: 'Sonido', mute: 'Silenciar',
       soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse sola', possess: 'Poseer ventanas sola',
       lang: 'Idioma', auto: 'Automático (sistema)', startup: 'Arrancar con el sistema', hooksOn: 'Hooks de Claude Code: instalados',
@@ -287,7 +287,7 @@ function rebuildTray() {
         turn: 'Turn around', flinch: 'Flinch',
       },
       opencodeOff: 'Install the opencode plugin', opencodeRemove: 'Remove the opencode plugin',
-      withAgents: 'Only with an AI agent open', quiet: 'Hide in fullscreen and games', dance: 'Dance to my music', possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
+      withAgents: 'Only with an AI agent open', quiet: 'Hide in fullscreen and games', dance: 'Dance to my music', danceBrowsers: 'Dance to the browser too', possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
     }
     : {
       online: `Capri — à l'écoute sur ${PORT}`, teleport: 'Téléporter', satellite: 'Regarder le satellite', demo: 'Lancer la démo', show: 'La faire revenir', hide: 'La ranger',
@@ -304,7 +304,7 @@ function rebuildTray() {
         turn: 'Se retourner', flinch: 'Sursaut',
       },
       opencodeOff: 'Installer le plugin opencode', opencodeRemove: 'Retirer le plugin opencode',
-      withAgents: 'Seulement avec une IA ouverte', quiet: 'Se cacher en plein écran et en jeu', dance: 'Danser sur ma musique', possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
+      withAgents: 'Seulement avec une IA ouverte', quiet: 'Se cacher en plein écran et en jeu', dance: 'Danser sur ma musique', danceBrowsers: 'Danser aussi avec le navigateur', possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
     };
 
   // Linux trays (caelestia's among them) often don't draw checkmarks: say the state in the label
@@ -362,6 +362,7 @@ function rebuildTray() {
     { label: state(t.wander, cfg.wander), type: 'checkbox', checked: cfg.wander, click: (item) => updateConfig({ wander: item.checked }) },
     { label: state(t.possess, cfg.possess), type: 'checkbox', checked: cfg.possess, click: (item) => updateConfig({ possess: item.checked }) },
     { label: state(t.dance, cfg.dance), type: 'checkbox', checked: cfg.dance, click: (item) => updateConfig({ dance: item.checked }) },
+    { label: state(t.danceBrowsers, cfg.danceBrowsers), type: 'checkbox', checked: cfg.danceBrowsers, click: (item) => updateConfig({ danceBrowsers: item.checked }) },
     { label: state(t.quiet, cfg.quiet), type: 'checkbox', checked: cfg.quiet, click: (item) => { updateConfig({ quiet: item.checked }); updateQuiet(); } },
     { label: state(t.withAgents, cfg.withAgents), type: 'checkbox', checked: cfg.withAgents, click: (item) => updateConfig({ withAgents: item.checked }) },
     { label: state(t.lively, cfg.lively), type: 'checkbox', checked: cfg.lively, click: (item) => updateConfig({ lively: item.checked }) },
@@ -452,8 +453,8 @@ function watchGamemode() {
   }, 5000);
 }
 
-// Dancing: something playing in a music player (MPRIS, through playerctl). Browsers are left out:
-// from there a video and a song look the same, and she shouldn't dance through your anime.
+// Dancing: something playing in a music player (MPRIS, through playerctl). Browsers only if you
+// say so (tray): from there a video and a song look the same. A fullscreen video hides her anyway.
 const BROWSERS = /^(brave|chromium|chrome|google-chrome|firefox|vivaldi|opera|edge|microsoft-edge|librewolf|zen)/i;
 let musicOn = false;
 
@@ -461,11 +462,12 @@ function watchMusic() {
   if (process.platform !== 'linux') return;
   setInterval(() => {
     execFile('playerctl', ['-a', 'metadata', '--format', '{{playerName}}\t{{status}}'], { timeout: 2000 }, (err, stdout) => {
+      const cfg = config.load();
       const playing = !err && String(stdout).split('\n').some((line) => {
         const [player, status] = line.split('\t');
-        return status === 'Playing' && player && !BROWSERS.test(player);
+        return status === 'Playing' && player && (cfg.danceBrowsers || !BROWSERS.test(player));
       });
-      const on = playing && config.load().dance;
+      const on = playing && cfg.dance;
       if (on !== musicOn) {
         musicOn = on;
         sendCommand('music', { on });

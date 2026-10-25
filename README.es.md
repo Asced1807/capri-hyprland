@@ -59,7 +59,8 @@ En Linux cada interruptor dice *sí* / *no* en su nombre, porque la mayoría de 
 |---|---|---|
 | **Solo con una IA abierta** | sí | Se va 45 s después de que termine la última sesión de Claude Code u opencode, o tras 20 min sin actividad de la IA; la siguiente sesión o prompt la trae de vuelta |
 | **Esconderse en pantalla completa y juegos** | sí | Se mete en su biochip mientras hay algo a pantalla completa (un juego, un vídeo) o gamemode está activo |
-| **Bailar con mi música** | sí | Baila mientras suena un reproductor de música (MPRIS, con `playerctl`); los navegadores quedan fuera para que no baile durante tus vídeos |
+| **Bailar con mi música** | sí | Baila mientras suena un reproductor de música (MPRIS, con `playerctl`) |
+| **Bailar también con el navegador** | no | También cuando la música sale del navegador (YouTube…); viene apagada porque desde ahí un vídeo y una canción se ven igual (un vídeo a pantalla completa la esconde igualmente) |
 | **Más animada** | sí | Más movimiento cuando no pasa nada, con siestas cortas |
 | **Poseer una ventana** | | Ahora mismo, en la ventana que estás usando |
 | **Esconderla (Super+Alt+C)** | | A su biochip, en la esquina inferior izquierda; otra vez para traerla |
