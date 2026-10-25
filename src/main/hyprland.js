@@ -238,7 +238,12 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
       try {
         const active = await request('j/activewindow');
         if (active?.pid === process.pid && active.title === 'Capri' && lastOther) {
-          await hyprctl(['dispatch', `hl.dsp.focus({ window = "address:${lastOther}" })`]);
+          // a focus dispatch warps the pointer to the middle of the window: not with no_warps,
+          // set only for this one dispatch, then back to whatever you had
+          const warps = (await hyprctl(['getoption', 'cursor:no_warps'])).includes('true') ? 'true' : 'false';
+          await hyprctl(['eval', `hl.config({ cursor = { no_warps = true } }) `
+            + `hl.dispatch(hl.dsp.focus({ window = "address:${lastOther}" })) `
+            + `hl.config({ cursor = { no_warps = ${warps} } })`]);
         }
       } catch {
         // nothing to give back
