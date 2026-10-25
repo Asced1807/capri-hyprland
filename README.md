@@ -1,10 +1,10 @@
-**English** · [Français](README.fr.md)
+**English** · [Español](README.es.md) · [Français](README.fr.md)
 
 > **Hyprland fork.** This is a fork of [mochiiwuff/capri-desktop](https://github.com/mochiiwuff/capri-desktop)
-> that makes Capri work on Linux under **Hyprland** (Wayland): click-through with pixel-precise hit-testing,
-> sitting on your windows, possessing them, and a Spanish translation. All the credit for Capri, her art and
-> her acting goes to the original project. Same license (MIT for the code, see [Credits and rights](#credits-and-rights)).
-> Jump to [Linux / Hyprland](#linux--hyprland).
+> that makes Capri work on Linux under **Hyprland** (Wayland), with **opencode** as well as Claude Code, and
+> adds new animations, new lines and a Spanish translation: see [What's new in this fork](#whats-new-in-this-fork).
+> All the credit for Capri, her art and her acting goes to the original project. Same license (MIT for the code,
+> see [Credits and rights](#credits-and-rights)). Jump to [Linux / Hyprland](#linux--hyprland).
 
 # Capri
 
@@ -15,6 +15,57 @@ comes to find you when Claude needs your permission, and loses it when the job i
 ![Capri telling you Claude is done](docs/done.png)
 
 ![Teleport, frame by frame](docs/teleport.png)
+
+## What's new in this fork
+
+### Runs on Linux / Hyprland
+
+Clicks, scrolling and drags go through her as they should, and she can still be clicked and dragged; she sits on
+your windows and possesses them; she never keeps your keyboard; `Super+Alt+C` hides her. Details in
+[Linux / Hyprland](#linux--hyprland).
+
+### Works with opencode too
+
+Same reactions for [opencode](https://opencode.ai) as for Claude Code, and she says *OpenCode* for those sessions.
+She also **starts by herself** when a Claude Code or opencode session begins. See [opencode too](#opencode-too).
+
+### New animations
+
+| Animation | What she does |
+|---|---|
+| **Possess any window** | She dives into the window you're on, even a tiled or maximized one, not only the one she sits on |
+| **Dance to your music** | Sways, drops, throws her arms up, her copies on the beat, notes of light off her mane, while a music player plays |
+| **Throw her** | Let go of her while moving: she flies, bounces off the sides and the top of the screen, and lands |
+| **Pet her** | Go slowly over her mane a few times: it bristles, she blushes pink and says something about it |
+| **Follows you across workspaces** | Switch workspaces and she comes along, out of the black slit with the red line |
+| **Short naps** | Now and then she falls asleep down to her green mask, and wakes up on her own |
+| **Livelier when idle** | Something every 7 to 18 seconds instead of every minute or so (tray › *Livelier*) |
+| **Every move by name** | Tray › *Animations*: nap, teleport, peek, sit, fall, possess, satellite, victory, alarm, zap, dance, spin, hop… |
+
+### New lines
+
+| When | She says (in Spanish, English or French) |
+|---|---|
+| **A session starts** | Something for the time of day: *"Afternoon shift on night-city-api. I'm here."* |
+| **The small hours** | *"It's late, choom. One more and bed, deal?"* |
+| **A command goes well** | `git push`: *"Pushed to the Net. Preem."* · tests: *"Tests are green."* · also `git commit`, `pacman`/`paru`, `docker`, installs, builds |
+| **You pet her** | *"There are dozens of us in here, and we're all blushing."* |
+| **Anywhere she'd say *choom*** | **Your name**: your system user name (`maria` → *Maria*), or any name from tray › *What she calls you* |
+| **An opencode session** | *OpenCode* instead of *Claude*: *"OpenCode's finished. You can come back."* |
+| **All of it** | In **Spanish** too (tray › Language › Español) |
+
+### New tray options
+
+On Linux every toggle says *on* / *off* in its label, since most trays don't draw checkmarks.
+
+| Option | Default | What it does |
+|---|---|---|
+| **Only with an AI agent open** | on | She leaves 45 s after the last Claude Code / opencode session ends, or after 20 min without agent activity; the next session or prompt brings her back |
+| **Hide in fullscreen and games** | on | Into her biochip while something is fullscreen on your screen (a game, a video) or gamemode is on |
+| **Dance to my music** | on | Dances while a music player plays (MPRIS, through `playerctl`); browsers are left out, so she won't dance through your videos |
+| **Livelier** | on | Busier when nothing's happening, with short naps |
+| **Possess a window** | | Right now, on the window you're on |
+| **Hide her (Super+Alt+C)** | | Into her biochip in the bottom-left corner; again to bring her back |
 
 ## What she does
 
@@ -141,16 +192,7 @@ What's different from Windows, and why:
   ```
 
 - **Language**: she speaks Spanish too (tray › Language › Español).
-- **New in this fork** (tray toggles, all on by default):
-  - *Only with an AI agent open*: she leaves 45 s after the last Claude Code / opencode session ends, or after
-    20 min without agent activity; the next session or prompt brings her back.
-  - *Hide in fullscreen and games*: into her biochip while something is fullscreen on your screen or gamemode is on.
-  - *Dance to my music*: she dances while a music player plays (MPRIS via `playerctl`; browsers are left out).
-  - Throw her: let go of her while moving and she flies, bouncing off the sides of the screen.
-  - Pet her: go slowly over her mane a few times and she blushes.
-  - She follows you to another workspace, out of the black slit with the red line.
-  - Lines by the hour, and for commands that went well (git push, tests, pacman/paru, docker, builds…).
-  - Tray › *Animations*: every one of her moves by name, on demand.
+- **What's new**: animations, lines and tray options, see [What's new in this fork](#whats-new-in-this-fork).
 - **Your name**: where she'd say *choom* she uses your Linux user name (`maria` → *Maria*), or any name you give
   her from the tray › *What she calls you*. This works on every platform.
 
