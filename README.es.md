@@ -33,6 +33,7 @@ Además **se abre sola** cuando empieza una sesión de Claude Code u opencode. V
 | **Poseer cualquier ventana** | Se mete en la ventana que estás usando, aunque esté en mosaico o maximizada, no solo en la que está sentada |
 | **Bailar con tu música** | Se balancea, baja, levanta los brazos, saca sus copias al ritmo y suelta notas de luz mientras suena un reproductor |
 | **Lanzarla** | Suéltala mientras mueves el ratón: sale volando, rebota en los bordes y el techo de la pantalla y aterriza |
+| **Amor** | Se sonroja, se lleva las manos al pecho y abre los brazos: corazones de luz vuelan hacia tu cursor y estallan al llegar (menú › Animaciones, de vez en cuando sola y al acariciarla) |
 | **Acariciarla** | Pasa el ratón despacio por su melena unas cuantas veces: se le eriza, se sonroja y te dice algo |
 | **Te sigue de escritorio** | Cambia de escritorio y viene contigo, saliendo de la grieta negra con la línea roja |
 | **Siestas cortas** | De vez en cuando se duerme hasta quedar en su máscara verde y se despierta sola |
@@ -44,10 +45,10 @@ Además **se abre sola** cuando empieza una sesión de Claude Code u opencode. V
 | Cuándo | Qué dice |
 |---|---|
 | **Empieza una sesión** | Algo según la hora: *"Tarde de trabajo en night-city-api. Aquí estoy."* |
-| **De madrugada** | *"Es tarde, choom. Uno más y a dormir, ¿vale?"* |
+| **De madrugada** | *"Es tarde, Maria. Uno más y a dormir, ¿vale?"* |
 | **Un comando sale bien** | `git push`: *"Subido al Net. Preem."* · tests: *"Tests en verde. Preem."* · también `git commit`, `pacman`/`paru`, `docker`, instalaciones y compilaciones |
 | **La acaricias** | *"Somos decenas aquí dentro, y todas nos sonrojamos."* |
-| **Donde diría *choom*** | **Tu nombre**: tu usuario del sistema (`maria` → *Maria*), o el que le pongas en menú › *Cómo me llamas* |
+| **Siempre** | **Te llama por tu nombre** (en el ejemplo, *Maria*): tu usuario del sistema (`maria` → *Maria*), o el que le pongas en menú › *Cómo me llamas* |
 | **Una sesión de opencode** | *OpenCode* en lugar de *Claude*: *"OpenCode terminó. Ya puedes volver."* |
 | **Todo** | En **español** (menú › Idioma › Español), además de inglés y francés |
 

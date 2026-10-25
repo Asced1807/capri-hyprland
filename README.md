@@ -36,6 +36,7 @@ She also **starts by herself** when a Claude Code or opencode session begins. Se
 | **Possess any window** | She dives into the window you're on, even a tiled or maximized one, not only the one she sits on |
 | **Dance to your music** | Sways, drops, throws her arms up, her copies on the beat, notes of light off her mane, while a music player plays |
 | **Throw her** | Let go of her while moving: she flies, bounces off the sides and the top of the screen, and lands |
+| **Love** | She blushes, hands to her chest, then throws her arms open and hearts of light fly at your pointer and burst there (tray › Animations, now and then on her own, and when you pet her) |
 | **Pet her** | Go slowly over her mane a few times: it bristles, she blushes pink and says something about it |
 | **Follows you across workspaces** | Switch workspaces and she comes along, out of the black slit with the red line |
 | **Short naps** | Now and then she falls asleep down to her green mask, and wakes up on her own |
@@ -47,10 +48,10 @@ She also **starts by herself** when a Claude Code or opencode session begins. Se
 | When | She says (in Spanish, English or French) |
 |---|---|
 | **A session starts** | Something for the time of day: *"Afternoon shift on night-city-api. I'm here."* |
-| **The small hours** | *"It's late, choom. One more and bed, deal?"* |
+| **The small hours** | *"It's late, Maria. One more and bed, deal?"* |
 | **A command goes well** | `git push`: *"Pushed to the Net. Preem."* · tests: *"Tests are green."* · also `git commit`, `pacman`/`paru`, `docker`, installs, builds |
 | **You pet her** | *"There are dozens of us in here, and we're all blushing."* |
-| **Anywhere she'd say *choom*** | **Your name**: your system user name (`maria` → *Maria*), or any name from tray › *What she calls you* |
+| **Always** | **She calls you by your name** (*Maria* in these examples): your system user name (`maria` → *Maria*), or any name from tray › *What she calls you* |
 | **An opencode session** | *OpenCode* instead of *Claude*: *"OpenCode's finished. You can come back."* |
 | **All of it** | In **Spanish** too (tray › Language › Español) |
 
@@ -194,7 +195,7 @@ What's different from Windows, and why:
 
 - **Language**: she speaks Spanish too (tray › Language › Español).
 - **What's new**: animations, lines and tray options, see [What's new in this fork](#whats-new-in-this-fork).
-- **Your name**: where she'd say *choom* she uses your Linux user name (`maria` → *Maria*), or any name you give
+- **Your name**: she calls you by your Linux user name (`maria` → *Maria*), or any name you give
   her from the tray › *What she calls you*. This works on every platform.
 
 ### Hook her up to Claude Code

@@ -279,6 +279,26 @@ export class FxLayer {
     this.add({ type: 'bolt', life, from, to, forks, width });
   }
 
+  // A heart of light thrown at you: it pops out of her, arcs over toward `to` (your pointer)
+  // wobbling on the way, and bursts into sparks when it gets there.
+  heart(x, y, to, { size = 1, delay = 0 } = {}) {
+    setTimeout(() => {
+      this.add({
+        type: 'heart', life: rand(1250, 1550), x0: x, y0: y, tx: to.x + rand(-30, 30), ty: to.y + rand(-24, 24),
+        size: size * rand(0.85, 1.15), phase: rand(0, Math.PI * 2), arc: rand(50, 110), burst: false,
+      });
+    }, delay);
+  }
+
+  heartPath(x, y, r) {
+    const { ctx } = this;
+    ctx.beginPath();
+    ctx.moveTo(x, y + r * 0.9);
+    ctx.bezierCurveTo(x - r * 1.3, y + r * 0.1, x - r * 1.1, y - r * 1.05, x, y - r * 0.4);
+    ctx.bezierCurveTo(x + r * 1.1, y - r * 1.05, x + r * 1.3, y + r * 0.1, x, y + r * 0.9);
+    ctx.closePath();
+  }
+
   glyph(x, y, text = pick(GLYPHS)) {
     this.add({ type: 'glyph', life: rand(900, 1400), x: x + rand(-40, 40), y, text, drift: rand(-12, 12) });
   }
@@ -1103,6 +1123,32 @@ export class FxLayer {
         ctx.fillStyle = COLORS.red;
         ctx.fillRect(x0, y0, w + skew, 3);
         ctx.restore();
+        break;
+      }
+      case 'heart': {
+        // on twos like everything she does: the path is sampled in steps, not tweened
+        const st = Math.floor(t * 18) / 18;
+        const e = 1 - (1 - st) ** 2;
+        const wob = Math.sin(st * Math.PI * 3 + it.phase) * 22 * (1 - st);
+        const x = Math.round(it.x0 + (it.tx - it.x0) * e + wob);
+        const y = Math.round(it.y0 + (it.ty - it.y0) * e - Math.sin(st * Math.PI) * it.arc);
+        const pop = st < 0.12 ? 0.4 + (st / 0.12) * 0.85 : st < 0.22 ? 1.25 - ((st - 0.12) / 0.1) * 0.25 : 1;
+        const r = 9 * it.size * pop;
+        ctx.save();
+        ctx.globalAlpha = st > 0.85 ? 1 - (st - 0.85) / 0.15 : 1;
+        this.heartPath(x - 2, y + 2, r); // the violet misregistration, like everything of hers
+        ctx.fillStyle = COLORS.violet;
+        ctx.fill();
+        this.heartPath(x, y, r);
+        ctx.fillStyle = COLORS.red;
+        ctx.fill();
+        ctx.fillStyle = COLORS.paper; // a glint
+        ctx.fillRect(Math.round(x - r * 0.55), Math.round(y - r * 0.45), Math.max(2, Math.round(r * 0.3)), Math.max(2, Math.round(r * 0.3)));
+        ctx.restore();
+        if (t > 0.9 && !it.burst) {
+          it.burst = true;
+          this.burst(it.tx, it.ty, { count: 6, power: 0.35, spread: 26 });
+        }
         break;
       }
       case 'glyph': {

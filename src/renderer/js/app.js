@@ -157,6 +157,7 @@ async function boot() {
     refreshHit();
   };
   capri.onPet = () => panel.say({ kind: 'info', line: pick(brain.t.pet), hold: 3500 });
+  capri.onLove = () => panel.say({ kind: 'info', line: pick(brain.t.love), hold: 3500 });
   capri.onTeleport = (phase) => (phase === 'start' ? panel.suspend() : panel.resume());
   capri.chipAt = () => chip.center();
   capri.onStow = () => {
@@ -344,6 +345,10 @@ async function boot() {
             capri.perform('alarm', Math.sign(pointer.x - capri.pos.x) || 1);
           },
           zap: () => capri.zap(pointer.x, pointer.y),
+          love: () => {
+            capri.mouse = pointer;
+            capri.love();
+          },
         };
         if (acts[cmd.act]) acts[cmd.act]();
         else capri.perform(cmd.act, capri.towardCenter()); // spin, hop, split, curious, look, turn, flinch

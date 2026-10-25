@@ -262,7 +262,7 @@ function rebuildTray() {
       hooksOff: 'Instalar hooks de Claude Code', hooksRemove: 'Quitar hooks de Claude Code', quit: 'Salir',
       acts: 'Animaciones',
       actNames: {
-        nap: 'Siesta: la máscara verde', dance: 'Bailar', teleport: 'Teletransporte', peek: 'Asomarse por un borde', sit: 'Sentarse en una ventana',
+        nap: 'Siesta: la máscara verde', love: 'Amor: lanzarte corazones', dance: 'Bailar', teleport: 'Teletransporte', peek: 'Asomarse por un borde', sit: 'Sentarse en una ventana',
         fall: 'Caerse', possess: 'Poseer una ventana', gaze: 'Mirar el satélite', satellite: 'Satélite completo (luz roja)',
         victory: 'Celebración', alarm: 'Alarma: venir a tu cursor', zap: 'Rayo a tu cursor', hurt: 'Golpe de error',
         spin: 'Giro', hop: 'Salto', split: 'Sus otras mentes (copias)', curious: 'Ladear la cabeza', look: 'Mirar a los lados',
@@ -280,7 +280,7 @@ function rebuildTray() {
       hooksOff: 'Install Claude Code hooks', hooksRemove: 'Remove Claude Code hooks', quit: 'Quit',
       acts: 'Animations',
       actNames: {
-        nap: 'Nap: the green mask', dance: 'Dance', teleport: 'Teleport', peek: 'Peek from an edge', sit: 'Sit on a window',
+        nap: 'Nap: the green mask', love: 'Love: hearts at you', dance: 'Dance', teleport: 'Teleport', peek: 'Peek from an edge', sit: 'Sit on a window',
         fall: 'Fall', possess: 'Possess a window', gaze: 'Look at the satellite', satellite: 'Whole satellite (red light)',
         victory: 'Victory', alarm: 'Alarm: come to your pointer', zap: 'Zap your pointer', hurt: 'Error hit',
         spin: 'Spin', hop: 'Hop', split: 'Her other minds (copies)', curious: 'Cock her head', look: 'Look around',
@@ -297,7 +297,7 @@ function rebuildTray() {
       hooksOff: 'Installer les hooks Claude Code', hooksRemove: 'Retirer les hooks Claude Code', quit: 'Quitter',
       acts: 'Animations',
       actNames: {
-        nap: 'Sieste : le masque vert', dance: 'Danser', teleport: 'Téléportation', peek: 'Passer la tête par un bord', sit: 'S’asseoir sur une fenêtre',
+        nap: 'Sieste : le masque vert', love: 'Amour : des cœurs pour toi', dance: 'Danser', teleport: 'Téléportation', peek: 'Passer la tête par un bord', sit: 'S’asseoir sur une fenêtre',
         fall: 'Tomber', possess: 'Posséder une fenêtre', gaze: 'Regarder le satellite', satellite: 'Satellite complet (lumière rouge)',
         victory: 'Victoire', alarm: 'Alerte : venir au pointeur', zap: 'Éclair sur le pointeur', hurt: 'Coup d’erreur',
         spin: 'Tour sur elle-même', hop: 'Saut', split: 'Ses autres esprits (copies)', curious: 'Pencher la tête', look: 'Regarder autour',

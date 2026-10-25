@@ -445,6 +445,7 @@ export class Capri {
       else if (r < 0.45) this.peek();
       else if (r < 0.62) this.teleport(this.spot('random'));
       else if (r < 0.7 && this.mouse && this.zap(this.mouse.x, this.mouse.y)) return;
+      else if (r < 0.75 && this.love()) return;
       else if (r < 0.93) this.perform(pick(['spin', 'hop', 'split', 'curious', 'look', 'spin']), this.towardCenter());
       else this.nap();
       return;
@@ -766,6 +767,21 @@ export class Capri {
     const h = this.head();
     const mane = { x: h.x, y: h.y - 40 * s };
     switch (cue) {
+      case 'blush': { // love: pink rising in her
+        const p = this.p;
+        p.sil = BLUSH;
+        p.silAmount = 0.4;
+        tween(p, { silAmount: 0 }, 1800, ease.out);
+        break;
+      }
+      case 'hearts': { // love: three hearts at you, a little apart
+        const to = this.mouse || { x: this.view.w / 2, y: this.view.h * 0.4 };
+        this.loveRound = (this.loveRound || 0) + 1;
+        const size = 0.9 + 0.25 * (this.loveRound % 3);
+        for (let i = 0; i < 3; i++) this.fx.heart(h.x, h.y - 10 * s, to, { size, delay: i * 110 });
+        this.voice.play('blip');
+        break;
+      }
       case 'note': // dancing: a note of light off her mane
         this.fx.glyph(h.x, h.y - 30 * s, pick(['♪', '♫', '♬']));
         break;
@@ -1435,13 +1451,19 @@ export class Capri {
     pt.amount = 0;
     this.nextPet = now + 40000;
     this.wake();
-    const p = this.p;
-    p.sil = BLUSH;
-    p.silAmount = 0.35;
-    tween(p, { silAmount: 0 }, 1400, ease.out);
-    this.perform('curious', x < this.pos.x ? -1 : 1);
     this.fx.burst(h.x, h.y - 40 * this.scale, { count: 6, power: 0.3, spread: 40 * this.scale });
+    this.love({ say: false }); // she blushes on her own cue, and the hearts are for you
     this.onPet?.();
+  }
+
+  // Hearts at your pointer (tray, now and then when idle, and when you pet her).
+  love({ say = true } = {}) {
+    if (this.busy || this.hidden || this.stowed || this.dormant || this.stance === 'fall') return false;
+    this.loveRound = 0;
+    const to = this.mouse || { x: this.view.w / 2 };
+    this.perform('love', to.x < this.pos.x ? -1 : 1);
+    if (say) this.onLove?.();
+    return true;
   }
 
   // You switched workspaces: she comes along, out of the black slit with the red line in it.

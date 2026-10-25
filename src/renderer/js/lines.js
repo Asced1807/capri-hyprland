@@ -107,6 +107,7 @@ export const LINES = {
       deps: ['Dépendances installées.', 'Nouvelles pièces dans le système.'],
       build: ['Compilé. Pas d’étincelles.', 'Build terminé.'],
     },
+    love: ['C’est pour toi, choom.', 'Ne le dis à personne.', 'Des dizaines d’esprits, et tous pour toi.'],
     pet: ['…ne touche pas à mes cheveux.', 'Mmh. Bon, encore un peu.', 'On est des dizaines là-dedans, et tous rougissent.'],
     noSeat: 'Aucune fenêtre où m’asseoir : il me faut de la place au-dessus.',
     verbs: {
@@ -192,6 +193,7 @@ export const LINES = {
       deps: ['Dependencias instaladas.', 'Piezas nuevas en el sistema.'],
       build: ['Compilado. Sin chispas.', 'Build terminado.'],
     },
+    love: ['Esto es para ti, choom.', 'No se lo digas a nadie.', 'Decenas de mentes, y todas para ti.'],
     pet: ['…no me toques el pelo.', 'Mmh. Vale, un poco más.', 'Somos decenas aquí dentro, y todas nos sonrojamos.'],
     noSeat: 'No hay ventana donde sentarme: necesito sitio encima de ella.',
     verbs: {
@@ -277,6 +279,7 @@ export const LINES = {
       deps: ['Dependencies installed.', 'New parts in the system.'],
       build: ['Built. No sparks.', 'Build done.'],
     },
+    love: ['This one’s for you, choom.', 'Don’t tell anyone.', 'Dozens of minds, and all of them for you.'],
     pet: ['…don’t touch my hair.', 'Mmh. Fine, a little more.', 'There are dozens of us in here, and we’re all blushing.'],
     noSeat: 'No window to sit on: I need room above one.',
     verbs: {

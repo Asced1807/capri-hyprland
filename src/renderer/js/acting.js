@@ -344,6 +344,28 @@ export const ACTS = {
     ],
   },
 
+  // love: she blushes, hands to her chest, then throws her arms open and hearts fly at you,
+  // three times, each a little bigger
+  love: {
+    priority: 2,
+    directional: true,
+    keys: [
+      [2, { head: -0.05, arms: -0.15, sy: 0.96 }],
+      [6, { head: 0.14, tilt: 2, arms: -0.32, mane: 0.12, bob: -2 }, 'blush'],
+      [3, { head: 0.18, tilt: 3, arms: -0.34, mane: 0.18, bob: -4 }],
+      [1, { sx: 0.94, sy: 1.08, bob: -8, arms: 0.45, mane: 0.25, smear: [0, -10] }, 'hearts'],
+      [5, { bob: -6, arms: 0.5, mane: 0.22, head: -0.06 }],
+      [3, { bob: -2, arms: 0.2, head: 0.1, tilt: 2 }],
+      [1, { sx: 0.95, sy: 1.06, bob: -7, arms: 0.5, mane: 0.25 }, 'hearts'],
+      [4, { bob: -5, arms: 0.45, mane: 0.2 }],
+      [3, { head: 0.12, tilt: 2, mane: 0.1, arms: 0.1 }],
+      [1, { sx: 0.93, sy: 1.09, bob: -9, arms: 0.55, mane: 0.3, echo: [6, 0] }, 'hearts'],
+      [6, { head: 0.16, tilt: 2.5, mane: 0.14, arms: 0.3, bob: -4 }],
+      [4, { head: 0.12, tilt: 1.5, mane: 0.06 }],
+      [2, {}],
+    ],
+  },
+
   // dancing to your music, one bar of it: sway left, drop, sway right, drop, both arms up,
   // her copies sliding out on the beat; capri.js plays it again while the music goes on
   dance: {
