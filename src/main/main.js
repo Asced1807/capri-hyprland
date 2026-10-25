@@ -253,7 +253,8 @@ function rebuildTray() {
   const lang = resolveLang(cfg.lang);
   const t = lang === 'es'
     ? {
-      online: `Capri — escuchando en ${PORT}`, teleport: 'Teletransportar', satellite: 'Mirar el satélite', demo: 'Ver la demo', show: 'Traerla de vuelta', hide: 'Guardarla',
+      online: `Capri — escuchando en ${PORT}`, teleport: 'Teletransportar', satellite: 'Mirar el satélite', demo: 'Ver la demo', show: 'Traerla de vuelta', hide: 'Esconderla',
+      withAgents: 'Solo con una IA abierta',
       size: 'Tamaño', small: 'Pequeña', medium: 'Mediana', large: 'Grande', sound: 'Sonido', mute: 'Silenciar',
       soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse sola', possess: 'Poseer ventanas sola',
       lang: 'Idioma', auto: 'Automático (sistema)', startup: 'Arrancar con el sistema', hooksOn: 'Hooks de Claude Code: instalados',
@@ -285,7 +286,7 @@ function rebuildTray() {
         turn: 'Turn around', flinch: 'Flinch',
       },
       opencodeOff: 'Install the opencode plugin', opencodeRemove: 'Remove the opencode plugin',
-      possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
+      withAgents: 'Only with an AI agent open', possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
     }
     : {
       online: `Capri — à l'écoute sur ${PORT}`, teleport: 'Téléporter', satellite: 'Regarder le satellite', demo: 'Lancer la démo', show: 'La faire revenir', hide: 'La ranger',
@@ -302,7 +303,7 @@ function rebuildTray() {
         turn: 'Se retourner', flinch: 'Sursaut',
       },
       opencodeOff: 'Installer le plugin opencode', opencodeRemove: 'Retirer le plugin opencode',
-      possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
+      withAgents: 'Seulement avec une IA ouverte', possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
     };
 
   // Linux trays (caelestia's among them) often don't draw checkmarks: say the state in the label
@@ -324,7 +325,8 @@ function rebuildTray() {
       submenu: Object.entries(t.actNames).map(([act, label]) => ({ label, click: () => sendCommand('act', { act }) })),
     },
     { label: t.demo, click: playDemo },
-    { label: cfg.visible ? t.hide : t.show, accelerator: SHORTCUT, click: () => toggleVisible() },
+    // the shortcut in the label too: Linux trays don't show accelerators
+    { label: `${cfg.visible ? t.hide : t.show} (${SHORTCUT})`, accelerator: SHORTCUT, click: () => toggleVisible() },
     { type: 'separator' },
     {
       label: t.size,
@@ -358,6 +360,7 @@ function rebuildTray() {
     },
     { label: state(t.wander, cfg.wander), type: 'checkbox', checked: cfg.wander, click: (item) => updateConfig({ wander: item.checked }) },
     { label: state(t.possess, cfg.possess), type: 'checkbox', checked: cfg.possess, click: (item) => updateConfig({ possess: item.checked }) },
+    { label: state(t.withAgents, cfg.withAgents), type: 'checkbox', checked: cfg.withAgents, click: (item) => updateConfig({ withAgents: item.checked }) },
     { label: state(t.lively, cfg.lively), type: 'checkbox', checked: cfg.lively, click: (item) => updateConfig({ lively: item.checked }) },
     {
       label: t.name,
@@ -418,6 +421,38 @@ function runOpencode(action) {
     sendCommand('hooks', { action, ok: false, error: err.message });
   }
   rebuildTray();
+}
+
+// "Only with an agent open": she leaves soon after the last agent session ends, or when no
+// agent has done anything for a long while. The Claude Code hook and the opencode plugin bring
+// her back with the next session or prompt (hooks/launch.js).
+const AGENT_IDLE_QUIT = 20 * 60 * 1000;
+const AFTER_LAST_END = 45 * 1000;
+const SESSION_STALE = 30 * 60 * 1000;
+let lastAgentEvent = Date.now();
+let lastEnd = 0;
+const liveSessions = new Map(); // session id -> last event time
+
+function trackAgent(evt) {
+  const now = Date.now();
+  if (evt.hook_event_name === 'CapriShowcase') return; // the demo isn't an agent
+  lastAgentEvent = now;
+  const id = evt.session_id;
+  if (!id) return;
+  if (evt.hook_event_name === 'SessionEnd') {
+    liveSessions.delete(id);
+    lastEnd = now;
+  } else if (evt.hook_event_name !== 'SessionStart') {
+    liveSessions.set(id, now); // a session that actually did something
+  }
+}
+
+function leaveWithoutAgents() {
+  if (!config.load().withAgents) return;
+  const now = Date.now();
+  for (const [id, seen] of liveSessions) if (now - seen > SESSION_STALE) liveSessions.delete(id);
+  const allEnded = lastEnd && liveSessions.size === 0 && now - lastEnd > AFTER_LAST_END;
+  if (allEnded || now - lastAgentEvent > AGENT_IDLE_QUIT) app.quit();
 }
 
 function createTray() {
@@ -555,11 +590,15 @@ function main() {
       : startWindowWatch({ overlay, onUpdate });
     createBridge({
       port: PORT,
-      onEvent: (evt) => overlay?.webContents.send('claude:event', evt),
+      onEvent: (evt) => {
+        trackAgent(evt);
+        overlay?.webContents.send('claude:event', evt);
+      },
       onToggle: () => toggleVisible(),
       onDebug: DEV ? debugHandler : null,
     });
     if (!HYPR) globalShortcut.register('Control+Alt+C', () => toggleVisible());
+    setInterval(leaveWithoutAgents, 15000);
     screen.on('display-metrics-changed', fitOverlay);
     screen.on('display-added', () => { fitOverlay(); rebuildTray(); });
     screen.on('display-removed', () => { fitOverlay(); rebuildTray(); });

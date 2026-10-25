@@ -66,6 +66,7 @@ export const CapriPlugin = async ({ client, directory }) => {
     }
   }
   const send = (evt) => { post(evt); }; // fire and forget
+  const sessions = new Set(); // seen here, ended when opencode shuts down
 
   // the last thing the assistant said in a session, for the "done" panel
   async function lastReply(sessionID) {
@@ -88,6 +89,7 @@ export const CapriPlugin = async ({ client, directory }) => {
 
   return {
     'chat.message': async (input, output) => {
+      sessions.add(input.sessionID);
       send({ hook_event_name: 'UserPromptSubmit', session_id: input.sessionID, prompt: clip(textOf(output.parts)) });
     },
 
@@ -128,6 +130,10 @@ export const CapriPlugin = async ({ client, directory }) => {
           break;
         case 'session.compacted':
           send({ hook_event_name: 'PreCompact', session_id: p.sessionID });
+          break;
+        case 'server.instance.disposed': // opencode is closing
+          for (const id of sessions) send({ hook_event_name: 'SessionEnd', session_id: id });
+          sessions.clear();
           break;
         case 'session.deleted':
           send({ hook_event_name: 'SessionEnd', session_id: p.info?.id ?? p.sessionID });
