@@ -145,11 +145,12 @@ function keepWindowRules(className) {
 
 // Same feed as the Windows helper: { fg, wins } with the visible windows front first,
 // in overlay coordinates. Plus the pointer, which Wayland won't forward to a click-through window.
-function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
+function startHyprlandWatch({ overlay, onUpdate, onPointer, isPressed = () => false }) {
   let stopped = false;
   let origin = { x: 0, y: 0, monitor: null };
   let lastSnap = '';
-  let lastOther = null; // the focused window before a click on her focused the overlay
+  let giveBackTo = null; // where the keyboard belongs: the last window you used on the screen you see
+  let givingBack = false;
   let lastPointer = '';
   let pointer = { x: 0, y: 0, inside: false };
 
@@ -189,9 +190,19 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
         max: Boolean(c.fullscreen),
       }))
       .filter((w) => w.x < vw && w.x + w.w > 0 && w.y < vh && w.y + w.h > 0);
-    if (active?.address && !isSelf(active)) lastOther = active.address;
-    // clicking her focuses the overlay for a moment: as far as she knows, focus didn't move
-    const snap = { fg: lastOther, wins };
+    const onScreen = clients
+      .filter((c) => c.mapped && !c.hidden && !isSelf(c) && shown.has(c.workspace.id))
+      .sort((a, b) => a.focusHistoryID - b.focusHistoryID);
+    giveBackTo = onScreen[0]?.address || null;
+    // The overlay must never keep the keyboard: Hyprland gives it the focus when you switch
+    // workspaces with the pointer anywhere (she covers the whole screen), or when you click her.
+    // Unless you're holding her right now, the keyboard goes back where it belongs.
+    if (active && isSelf(active) && !isPressed() && !givingBack) {
+      givingBack = true;
+      giveBack().finally(() => { givingBack = false; });
+    }
+    // as far as she knows, focus never moved to herself
+    const snap = { fg: active && isSelf(active) ? giveBackTo : active?.address || null, wins };
     const text = JSON.stringify(snap);
     if (text !== lastSnap) {
       lastSnap = text;
@@ -226,6 +237,17 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
   loop(snapshot, 150);
   loop(poll, 33);
 
+  // a focus dispatch warps the pointer to the middle of the window: not with no_warps, set only
+  // for this one dispatch, then back to whatever you had
+  async function giveBack() {
+    const to = giveBackTo;
+    if (!to) return;
+    const warps = (await hyprctl(['getoption', 'cursor:no_warps'])).includes('true') ? 'true' : 'false';
+    await hyprctl(['eval', 'hl.config({ cursor = { no_warps = true } }) '
+      + `hl.dispatch(hl.dsp.focus({ window = "address:${to}" })) `
+      + `hl.config({ cursor = { no_warps = ${warps} } })`]);
+  }
+
   return {
     cursor: () => pointer,
     // the page (re)loaded and missed what was sent before: send it all again on the next tick
@@ -237,14 +259,7 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
     async refocus() {
       try {
         const active = await request('j/activewindow');
-        if (active?.pid === process.pid && active.title === 'Capri' && lastOther) {
-          // a focus dispatch warps the pointer to the middle of the window: not with no_warps,
-          // set only for this one dispatch, then back to whatever you had
-          const warps = (await hyprctl(['getoption', 'cursor:no_warps'])).includes('true') ? 'true' : 'false';
-          await hyprctl(['eval', `hl.config({ cursor = { no_warps = true } }) `
-            + `hl.dispatch(hl.dsp.focus({ window = "address:${lastOther}" })) `
-            + `hl.config({ cursor = { no_warps = ${warps} } })`]);
-        }
+        if (active?.pid === process.pid && active.title === 'Capri') await giveBack();
       } catch {
         // nothing to give back
       }

@@ -36,6 +36,7 @@ let demoTimer = null;
 let windowWatch = null;
 let ruleKeeper = null;
 let quitting = false;
+let pressed = false; // a button held down on her (Hyprland: she may keep the focus meanwhile)
 
 const userSoundsDir = () => path.join(app.getPath('userData'), 'sounds');
 
@@ -379,7 +380,11 @@ function createTray() {
 function registerIpc() {
   // On Hyprland a click on her gives the overlay the keyboard. Not taken back on the press:
   // Hyprland would move the pointer away with it and the drag would never see its release.
+  ipcMain.on('overlay:pressed', () => {
+    pressed = true;
+  });
   ipcMain.on('overlay:released', () => {
+    pressed = false;
     if (HYPR) windowWatch?.refocus();
   });
   ipcMain.on('overlay:interactive', (_e, on) => {
@@ -490,7 +495,9 @@ function main() {
     createTray();
     const onUpdate = (data) => overlay?.webContents.send('windows:update', data);
     windowWatch = HYPR
-      ? startHyprlandWatch({ overlay, onUpdate, onPointer: (p) => overlay?.webContents.send('overlay:pointer', p) })
+      ? startHyprlandWatch({
+        overlay, onUpdate, onPointer: (p) => overlay?.webContents.send('overlay:pointer', p), isPressed: () => pressed,
+      })
       : startWindowWatch({ overlay, onUpdate });
     createBridge({
       port: PORT,

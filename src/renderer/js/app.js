@@ -126,6 +126,7 @@ async function boot() {
     if (e.isTrusted) {
       pressed = true;
       lastReal = performance.now();
+      host.pressed?.();
     }
   }, true);
   window.addEventListener('mouseup', () => {
