@@ -311,6 +311,7 @@ function createTray() {
 function registerIpc() {
   ipcMain.on('overlay:interactive', (_e, on) => {
     overlay?.setIgnoreMouseEvents(!on, { forward: true });
+    if (!on && HYPR) windowWatch?.refocus();
   });
   ipcMain.handle('overlay:cursor', () => {
     if (HYPR) return windowWatch.cursor();

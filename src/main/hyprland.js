@@ -46,12 +46,14 @@ const hyprctl = (args) => new Promise((resolve) => {
 });
 
 // What the overlay needs from the compositor: floating over everything, on every workspace,
-// never taking focus, no decorations, no blur and no opacity rule from the user's config,
+// not grabbing focus by itself, no decorations, no blur and no opacity rule from the user's config,
 // covering the whole monitor. Runtime rules: nothing is written to the user's config.
 const RULE = {
   float: true,
   pin: true,
-  no_focus: true,
+  // not no_focus: Hyprland doesn't send the pointer to such a window, and she couldn't be
+  // clicked or dragged. Hovering her doesn't focus her; a click does, and refocus() undoes it.
+  no_follow_mouse: true,
   no_initial_focus: true,
   border_size: 0,
   no_shadow: true,
@@ -74,17 +76,24 @@ function luaValue(v) {
   return typeof v === 'string' ? JSON.stringify(v) : String(v);
 }
 
+// Matched on the title too: the demo's little terminal is another window of the same app.
+const TITLE = '^(Capri)$';
+const DEMO_TITLE = '^(night-city-api.*)$';
+
 async function applyWindowRules(className) {
   const status = await hyprctl(['status']);
   const match = `^(${className})$`;
   if (/configProvider:\s*lua/.test(status)) {
     const props = Object.entries(RULE).map(([k, v]) => `${k} = ${luaValue(v)}`).join(', ');
-    report(await hyprctl(['eval', `hl.window_rule({ name = "capri-overlay", match = { class = ${JSON.stringify(match)} }, ${props} })`]));
+    report(await hyprctl(['eval', `hl.window_rule({ name = "capri-overlay", match = { class = ${JSON.stringify(match)}, title = ${JSON.stringify(TITLE)} }, ${props} })`]));
+    // the demo's little terminal: floating at its own size, so she can sit on it and possess it
+    report(await hyprctl(['eval', `hl.window_rule({ name = "capri-demo", match = { class = ${JSON.stringify(match)}, title = ${JSON.stringify(DEMO_TITLE)} }, float = true, size = "620 300", no_initial_focus = true })`]));
     return 'lua';
   }
   // hyprlang (.conf), windowrule v3 syntax (Hyprland 0.53+)
   const props = Object.entries(RULE).map(([k, v]) => `${k} ${v === true ? 'on' : v}`).join(', ');
-  report(await hyprctl(['keyword', 'windowrule', `${props}, match:class ${match}`]));
+  report(await hyprctl(['keyword', 'windowrule', `${props}, match:class ${match}, match:title ${TITLE}`]));
+  report(await hyprctl(['keyword', 'windowrule', `float on, size 620 300, no_initial_focus on, match:class ${match}, match:title ${DEMO_TITLE}`]));
   return 'conf';
 }
 
@@ -122,6 +131,7 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
   let stopped = false;
   let origin = { x: 0, y: 0, monitor: null };
   let lastSnap = '';
+  let lastOther = null; // the focused window before a click on her focused the overlay
   let lastPointer = '';
   let pointer = { x: 0, y: 0, inside: false };
 
@@ -134,7 +144,9 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
     const [clients, monitors, active] = await Promise.all([
       request('j/clients'), request('j/monitors'), request('j/activewindow'),
     ]);
-    const self = clients.find((c) => c.pid === process.pid && c.mapped);
+    // her own overlay; the demo's terminal is ours too, but she sits on that one
+    const isSelf = (c) => c.pid === process.pid && c.title === 'Capri';
+    const self = clients.find((c) => isSelf(c) && c.mapped);
     const monitor = monitors.find((m) => (self ? m.id === self.monitor : m.focused)) || monitors[0];
     if (!monitor) return;
     origin = self ? { x: self.at[0], y: self.at[1], monitor: monitor.id } : { x: monitor.x, y: monitor.y, monitor: monitor.id };
@@ -146,7 +158,7 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
     // then floating, then tiled; inside each, the most recently focused first
     const layer = (c) => (special && c.workspace.id === special ? 0 : 4) + (c.fullscreen ? 0 : c.floating ? 1 : 2);
     const wins = clients
-      .filter((c) => c.mapped && !c.hidden && c.pid !== process.pid && shown.has(c.workspace.id))
+      .filter((c) => c.mapped && !c.hidden && !isSelf(c) && shown.has(c.workspace.id))
       .filter((c) => c.size[0] >= 200 && c.size[1] >= 120)
       .sort((a, b) => layer(a) - layer(b) || a.focusHistoryID - b.focusHistoryID)
       .slice(0, 40)
@@ -159,7 +171,9 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
         max: Boolean(c.fullscreen),
       }))
       .filter((w) => w.x < vw && w.x + w.w > 0 && w.y < vh && w.y + w.h > 0);
-    const snap = { fg: active?.address || null, wins };
+    if (active?.address && !isSelf(active)) lastOther = active.address;
+    // clicking her focuses the overlay for a moment: as far as she knows, focus didn't move
+    const snap = { fg: lastOther, wins };
     const text = JSON.stringify(snap);
     if (text !== lastSnap) {
       lastSnap = text;
@@ -196,6 +210,17 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
 
   return {
     cursor: () => pointer,
+    // give the keyboard back to the window you were on, once you let go of her
+    async refocus() {
+      try {
+        const active = await request('j/activewindow');
+        if (active?.pid === process.pid && active.title === 'Capri' && lastOther) {
+          await hyprctl(['dispatch', `hl.dsp.focus({ window = "address:${lastOther}" })`]);
+        }
+      } catch {
+        // nothing to give back
+      }
+    },
     stop() {
       stopped = true;
     },
