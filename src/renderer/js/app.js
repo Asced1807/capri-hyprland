@@ -281,6 +281,14 @@ async function boot() {
         if (cmd.on) capri.stow();
         else capri.unstow();
         break;
+      case 'possess': // on demand (tray)
+        if (capri.stowed) {
+          host.setConfig({ visible: true });
+          await capri.unstow();
+        }
+        await until(free, 6000);
+        capri.possess();
+        break;
       case 'satellite': // the whole sequence, on demand (tray)
         if (capri.stowed) {
           host.setConfig({ visible: true });

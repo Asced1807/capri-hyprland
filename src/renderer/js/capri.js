@@ -417,7 +417,8 @@ export class Capri {
     }
     const seat = this.pickSeat();
     const r = Math.random();
-    if (seat && r < 0.35) this.sitOn(seat);
+    if (r < 0.15 && this.canPossess()) this.possess();
+    else if (seat && r < 0.4) this.sitOn(seat);
     else if (r < 0.6) this.peek();
     else if (r < 0.85) this.teleport(this.spot('random'));
     else this.flourish();
@@ -1110,9 +1111,17 @@ export class Capri {
     return this.teleport(this.seat(win, dx), { stance: 'sit', perch: { id: win.id, dx }, face: this.facing });
   }
 
+  // The window she'd take over: the one she sits on, otherwise the one you're on (or the one
+  // in front), so she can get into any window, even tiled ones she has no room to sit on.
+  possessTarget() {
+    const { wins, fg } = this.windows;
+    if (this.stance === 'sit') return wins.find((w) => w.id === this.perch?.id) || null;
+    const ok = (w) => !w.max && w.w > 260 && w.h > 160;
+    return wins.find((w) => w.id === fg && ok(w)) || wins.find(ok) || null;
+  }
+
   canPossess() {
-    return this.possessWindows && !this.busy && !this.hidden && this.stance === 'sit' && !reducedMotion.matches
-      && this.windows.wins.some((w) => w.id === this.perch?.id);
+    return this.possessWindows && !this.busy && !this.hidden && !reducedMotion.matches && Boolean(this.possessTarget());
   }
 
   // Like in the show, she gets into things: she dives into the window she sits on and takes it
@@ -1121,15 +1130,16 @@ export class Capri {
   async possess() {
     if (!this.canPossess()) return false;
     const s = this.scale;
-    const id = this.perch.id;
-    const win = this.windows.wins.find((w) => w.id === id);
-    const entry = this.pos.x - win.x;
+    const win = this.possessTarget();
+    const id = win.id;
+    // sitting, she drops straight in; otherwise she dives in from wherever she floats
+    const entry = clamp(this.pos.x - win.x, 60, Math.max(60, win.w - 60));
     this.busy = true;
     this.wake();
     this.onTeleport?.('start');
     await this.perform('dive');
     const head = await this.vanish({ beam: false });
-    this.fx.streak(head.x, head.y, this.pos.x, win.y + 40 * s);
+    this.fx.streak(head.x, head.y, win.x + entry, win.y + 40 * s);
 
     const rect = () => this.windows.wins.find((w) => w.id === id) || null;
     const covers = () => {

@@ -228,6 +228,11 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer }) {
 
   return {
     cursor: () => pointer,
+    // the page (re)loaded and missed what was sent before: send it all again on the next tick
+    resend() {
+      lastSnap = '';
+      lastPointer = '';
+    },
     // give the keyboard back to the window you were on, once you let go of her
     async refocus() {
       try {
