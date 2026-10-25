@@ -58,6 +58,7 @@ async function boot() {
   });
   capri.wander = config.wander;
   capri.possessWindows = config.possess;
+  capri.lively = config.lively;
   capri.setScale(config.scale);
 
   const brain = new Brain({ capri, panel, voice, host, lang: config.lang, who: { name: config.userName, shortcut: config.shortcut } });
@@ -281,6 +282,7 @@ async function boot() {
     voice.configure(cfg);
     capri.wander = cfg.wander;
     capri.possessWindows = cfg.possess;
+    capri.lively = cfg.lively;
     if (cfg.scale !== capri.scale) capri.setScale(cfg.scale);
     brain.who = { name: cfg.userName, shortcut: cfg.shortcut };
     if (cfg.lang !== brain.lang) {

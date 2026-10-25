@@ -13,6 +13,7 @@ const DEFAULTS = {
   wander: true,      // random teleports when idle
   possess: true,     // now and then she dives into the window she sits on and takes it over
   visible: true,
+  lively: true,      // more going on when nothing's happening, and short naps
   name: '',          // what she calls you; empty = your system user name
 };
 

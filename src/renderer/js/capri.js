@@ -52,6 +52,8 @@ export class Capri {
     this.dormant = false; // asleep, down to her mask
     this.wander = true;
     this.possessWindows = true; // tray: "Possess my windows"
+    this.lively = true; // tray: "Livelier": more going on when nothing's happening, short naps
+    this.napUntil = 0; // a nap she wakes up from on her own
     this.dragging = false;
 
     this.p = {
@@ -374,11 +376,16 @@ export class Capri {
     }
 
     if (this.mode === 'idle' && this.stance !== 'peek' && now > this.nextGaze) {
-      this.nextGaze = now + rand(90000, 180000);
+      this.nextGaze = now + (this.lively ? rand(45000, 90000) : rand(90000, 180000));
       this.gaze();
     }
 
-    if (this.mode === 'idle' && now - this.lastActivity > SLEEP_AFTER) this.setMode('sleep');
+    if (this.mode === 'idle' && now - this.lastActivity > (this.lively ? SLEEP_AFTER * 0.4 : SLEEP_AFTER)) this.setMode('sleep');
+    if (this.mode === 'sleep' && this.napUntil && now > this.napUntil) {
+      this.napUntil = 0;
+      this.wake();
+      return;
+    }
     if (this.mode === 'sleep' && now - this.sleptAt > DOZE_AFTER) {
       this.doze();
       return;
@@ -390,7 +397,7 @@ export class Capri {
     }
 
     if (this.mode === 'idle' && now > this.nextMove) {
-      this.nextMove = now + rand(25000, 70000);
+      this.nextMove = now + (this.lively ? rand(7000, 18000) : rand(25000, 70000));
       this.wanderStep();
     }
 
@@ -417,6 +424,17 @@ export class Capri {
     }
     const seat = this.pickSeat();
     const r = Math.random();
+    if (this.lively) {
+      // a bit of everything: possess, sit, peek, wander off, show off, zap your pointer, nap
+      if (r < 0.14 && this.canPossess()) this.possess();
+      else if (r < 0.3 && seat) this.sitOn(seat);
+      else if (r < 0.45) this.peek();
+      else if (r < 0.62) this.teleport(this.spot('random'));
+      else if (r < 0.7 && this.mouse && this.zap(this.mouse.x, this.mouse.y)) return;
+      else if (r < 0.93) this.perform(pick(['spin', 'hop', 'split', 'curious', 'look', 'spin']), this.towardCenter());
+      else this.nap();
+      return;
+    }
     if (r < 0.15 && this.canPossess()) this.possess();
     else if (seat && r < 0.4) this.sitOn(seat);
     else if (r < 0.6) this.peek();
@@ -475,8 +493,8 @@ export class Capri {
     const now = performance.now();
     if (mode !== 'sleep') this.lastActivity = now;
     // after anything happens, stay put a while (so she doesn't wander off right after "done")
-    this.nextMove = Math.max(this.nextMove, now + rand(55000, 120000));
-    this.nextGaze = Math.max(this.nextGaze, now + rand(30000, 70000));
+    this.nextMove = Math.max(this.nextMove, now + (this.lively ? rand(15000, 30000) : rand(55000, 120000)));
+    this.nextGaze = Math.max(this.nextGaze, now + (this.lively ? rand(20000, 40000) : rand(30000, 70000)));
     if (this.mode === mode) return;
     const prev = this.mode;
     this.mode = mode;
@@ -488,7 +506,14 @@ export class Capri {
     else tween(p, { alpha: 1, sparkle: 1, boil: 0.9 }, 250, ease.out);
   }
 
+  // A short nap: she drifts off, comes apart down to her mask, and wakes up on her own.
+  nap() {
+    this.setMode('sleep');
+    this.napUntil = performance.now() + rand(40000, 70000);
+  }
+
   wake() {
+    this.napUntil = 0;
     if (this.mode === 'sleep') this.setMode('idle');
     this.lastActivity = performance.now();
     if (this.dormant) this.rouse(); // down to her mask: she comes back
@@ -975,7 +1000,7 @@ export class Capri {
   // After a move: free again, stay put a while, the panel back, and the move that was waiting, if any.
   async settle() {
     this.busy = false;
-    this.nextMove = Math.max(this.nextMove, performance.now() + rand(25000, 60000));
+    this.nextMove = Math.max(this.nextMove, performance.now() + (this.lively ? rand(6000, 15000) : rand(25000, 60000)));
     this.onTeleport?.('end');
     if (this.pending) {
       const next = this.pending;
