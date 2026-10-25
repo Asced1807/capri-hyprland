@@ -12,6 +12,8 @@
     "demo": "node scripts/demo.js",
     "hooks:install": "node scripts/install-hooks.js",
     "hooks:uninstall": "node scripts/install-hooks.js --uninstall",
+    "opencode:install": "node scripts/install-opencode.js",
+    "opencode:uninstall": "node scripts/install-opencode.js --uninstall",
     "dist": "electron-builder --win"
   },
   "keywords": [
@@ -40,6 +42,7 @@
       "src/**",
       "assets/**",
       "hooks/**",
+      "integrations/**",
       "scripts/**",
       "package.json",
       "LICENSE"

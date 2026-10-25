@@ -6,6 +6,7 @@
 // Rule #1: never get in Claude's way. No output, always exit 0, give up fast.
 
 const http = require('node:http');
+const { launch } = require('./launch');
 
 const PORT = Number(process.env.CAPRI_PORT) || 47823;
 
@@ -77,6 +78,17 @@ process.stdin.on('end', () => {
     res.on('end', bail);
   });
   req.on('timeout', () => { req.destroy(); bail(); });
-  req.on('error', bail);
+  req.on('error', (err) => {
+    // nobody listening: a session starting (or a prompt after she was closed) brings her up
+    const starting = evt.hook_event_name === 'SessionStart' || evt.hook_event_name === 'UserPromptSubmit';
+    if (err.code === 'ECONNREFUSED' && starting) {
+      try {
+        launch();
+      } catch {
+        // never in Claude's way
+      }
+    }
+    bail();
+  });
   req.end(body);
 });

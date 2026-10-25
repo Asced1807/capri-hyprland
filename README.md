@@ -157,6 +157,24 @@ Restart your Claude Code sessions afterwards. To remove it: `npm run hooks:unins
 
 The hooks run `async`: they never slow Claude down, and when Capri isn't running they do nothing.
 
+### opencode too
+
+She works with [opencode](https://opencode.ai) the same way: a plugin turns opencode's events (prompts, tools,
+permission requests, failed commands, the end of a task) into the events she already knows, through the same
+local bridge, and she says *OpenCode* instead of *Claude* for those sessions.
+
+```bash
+npm run opencode:install     # or tray › Install the opencode plugin
+```
+
+It writes a one-line stub in `~/.config/opencode/plugin/capri.js` that loads `integrations/opencode/capri.js`
+from your clone. `npm run opencode:uninstall` removes it. Like the hook: 127.0.0.1 only, file contents never sent.
+
+### She starts with your agent
+
+From a clone, the Claude Code hook and the opencode plugin start Capri themselves when a session begins and
+she isn't running. Set `CAPRI_AUTOSTART=0` to turn that off.
+
 ### Try it without Claude
 
 ```bash

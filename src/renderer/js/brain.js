@@ -40,6 +40,7 @@ export class Brain {
     }
     if (evt.cwd) s.project = basename(evt.cwd);
     if (evt.session_title) s.title = evt.session_title;
+    if (evt.capri_agent) s.agent = evt.capri_agent; // 'opencode' (integrations/opencode), else Claude Code
     s.seen = Date.now();
     return s;
   }
@@ -49,6 +50,8 @@ export class Brain {
   }
 
   say(kind, line, s, extra = {}) {
+    // her lines talk about Claude: for an opencode session, it's opencode doing the work
+    if (s?.agent === 'opencode' && typeof line === 'string') line = line.replace(/\bClaude\b/g, 'OpenCode');
     this.panel.say({ kind, line, tag: s ? s.title || s.project : '', ...extra });
   }
 

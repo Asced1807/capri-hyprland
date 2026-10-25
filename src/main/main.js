@@ -13,6 +13,7 @@ const { createBridge } = require('./bridge');
 const { startWindowWatch } = require('./windows');
 const { isHyprland, applyWindowRules, keepWindowRules, startHyprlandWatch } = require('./hyprland');
 const hooks = require('../../scripts/install-hooks');
+const opencode = require('../../scripts/install-opencode');
 const demoSteps = require('../../scripts/demo-sequence');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -265,6 +266,7 @@ function rebuildTray() {
         spin: 'Giro', hop: 'Salto', split: 'Sus otras mentes (copias)', curious: 'Ladear la cabeza', look: 'Mirar a los lados',
         turn: 'Darse la vuelta', flinch: 'Sobresalto',
       },
+      opencodeOff: 'Instalar plugin de OpenCode', opencodeRemove: 'Quitar plugin de OpenCode',
       possessNow: 'Poseer una ventana', lively: 'Más animada', name: 'Cómo me llamas', nameUser: 'Mi usuario', nameOther: 'Otro nombre…', nameAsk: '¿Cómo quieres que te llame?', nameSave: 'Guardar',
     }
     : lang === 'en'
@@ -282,6 +284,7 @@ function rebuildTray() {
         spin: 'Spin', hop: 'Hop', split: 'Her other minds (copies)', curious: 'Cock her head', look: 'Look around',
         turn: 'Turn around', flinch: 'Flinch',
       },
+      opencodeOff: 'Install the opencode plugin', opencodeRemove: 'Remove the opencode plugin',
       possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
     }
     : {
@@ -298,6 +301,7 @@ function rebuildTray() {
         spin: 'Tour sur elle-même', hop: 'Saut', split: 'Ses autres esprits (copies)', curious: 'Pencher la tête', look: 'Regarder autour',
         turn: 'Se retourner', flinch: 'Sursaut',
       },
+      opencodeOff: 'Installer le plugin opencode', opencodeRemove: 'Retirer le plugin opencode',
       possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
     };
 
@@ -381,6 +385,9 @@ function rebuildTray() {
       ? { label: t.hooksOn, enabled: false }
       : { label: t.hooksOff, click: () => runHooks('install') },
     ...(hookState.installed ? [{ label: t.hooksRemove, click: () => runHooks('uninstall') }] : []),
+    opencode.status().installed
+      ? { label: t.opencodeRemove, click: () => runOpencode('uninstall') }
+      : { label: t.opencodeOff, click: () => runOpencode('install') },
     { type: 'separator' },
     { label: t.quit, click: () => app.quit() },
   ].filter(Boolean));
@@ -396,6 +403,16 @@ function loginItemOptions() {
 function runHooks(action) {
   try {
     const result = action === 'install' ? hooks.install() : hooks.uninstall();
+    sendCommand('hooks', { action, ok: true, file: result.file });
+  } catch (err) {
+    sendCommand('hooks', { action, ok: false, error: err.message });
+  }
+  rebuildTray();
+}
+
+function runOpencode(action) {
+  try {
+    const result = action === 'install' ? opencode.install() : opencode.uninstall();
     sendCommand('hooks', { action, ok: true, file: result.file });
   } catch (err) {
     sendCommand('hooks', { action, ok: false, error: err.message });
