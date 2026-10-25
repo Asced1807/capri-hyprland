@@ -54,6 +54,7 @@ export class Capri {
     this.possessWindows = true; // tray: "Possess my windows"
     this.lively = true; // tray: "Livelier": more going on when nothing's happening, short naps
     this.napUntil = 0; // a nap she wakes up from on her own
+    this.music = false; // something's playing (main process, from MPRIS): she dances when idle
     this.dragging = false;
 
     this.p = {
@@ -394,6 +395,12 @@ export class Capri {
     if (this.stance === 'peek' && now > this.peekUntil) {
       this.unpeek();
       return;
+    }
+
+    // music on: bar after bar, as long as nothing else is going on
+    if (this.music && this.mode === 'idle' && !this.busy && !this.act && this.stance === 'stand') {
+      this.perform('dance');
+      return 'stand';
     }
 
     if (this.mode === 'idle' && now > this.nextMove) {
@@ -752,6 +759,9 @@ export class Capri {
     const h = this.head();
     const mane = { x: h.x, y: h.y - 40 * s };
     switch (cue) {
+      case 'note': // dancing: a note of light off her mane
+        this.fx.glyph(h.x, h.y - 30 * s, pick(['♪', '♫', '♬']));
+        break;
       case 'gather': // shards sucked into the mane before it blows
         this.fx.burst(mane.x, mane.y, { count: 18, inward: true, power: 0.7, spread: 170 * s });
         break;

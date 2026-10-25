@@ -344,6 +344,23 @@ export const ACTS = {
     ],
   },
 
+  // dancing to your music, one bar of it: sway left, drop, sway right, drop, both arms up,
+  // her copies sliding out on the beat; capri.js plays it again while the music goes on
+  dance: {
+    priority: 1,
+    keys: [
+      [3, { bob: -6, tilt: -5, head: -0.12, hair: -3, armL: 0.5, armR: -0.1, mane: 0.1 }, 'note'],
+      [3, { bob: 2, sy: 0.94, sx: 1.05, head: 0, arms: 0.08 }],
+      [3, { bob: -6, tilt: 5, head: 0.12, hair: 3, armR: 0.5, armL: -0.1, mane: 0.1 }, 'note'],
+      [3, { bob: 2, sy: 0.94, sx: 1.05, head: 0, arms: 0.08 }],
+      [3, { bob: -11, arms: 0.7, mane: 0.26, head: -0.06 }, 'note'],
+      [3, { bob: 0, sy: 0.92, sx: 1.06, arms: 0.2, mane: 0.1 }],
+      [2, { echo: [9, 0], tilt: -3, head: 0.1, hair: -2 }],
+      [2, { echo: [-9, 0], tilt: 3, head: -0.1, hair: 2 }],
+      [2, { bob: 1, sy: 0.96 }],
+    ],
+  },
+
   // landing after a fall: the impact pushes the arms down, they bounce back past rest
   land: {
     priority: 3,

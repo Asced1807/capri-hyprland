@@ -301,6 +301,9 @@ async function boot() {
       case 'status':
         brain.status();
         break;
+      case 'music': // something started or stopped playing
+        capri.music = cmd.on;
+        break;
       case 'stow': // Ctrl+Alt+C: into her biochip, or back out
         if (cmd.on) capri.stow();
         else capri.unstow();

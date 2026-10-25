@@ -255,14 +255,14 @@ function rebuildTray() {
   const t = lang === 'es'
     ? {
       online: `Capri — escuchando en ${PORT}`, teleport: 'Teletransportar', satellite: 'Mirar el satélite', demo: 'Ver la demo', show: 'Traerla de vuelta', hide: 'Esconderla',
-      withAgents: 'Solo con una IA abierta', quiet: 'Esconderse en pantalla completa y juegos',
+      withAgents: 'Solo con una IA abierta', quiet: 'Esconderse en pantalla completa y juegos', dance: 'Bailar con mi música',
       size: 'Tamaño', small: 'Pequeña', medium: 'Mediana', large: 'Grande', sound: 'Sonido', mute: 'Silenciar',
       soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse sola', possess: 'Poseer ventanas sola',
       lang: 'Idioma', auto: 'Automático (sistema)', startup: 'Arrancar con el sistema', hooksOn: 'Hooks de Claude Code: instalados',
       hooksOff: 'Instalar hooks de Claude Code', hooksRemove: 'Quitar hooks de Claude Code', quit: 'Salir',
       acts: 'Animaciones',
       actNames: {
-        nap: 'Siesta: la máscara verde', teleport: 'Teletransporte', peek: 'Asomarse por un borde', sit: 'Sentarse en una ventana',
+        nap: 'Siesta: la máscara verde', dance: 'Bailar', teleport: 'Teletransporte', peek: 'Asomarse por un borde', sit: 'Sentarse en una ventana',
         fall: 'Caerse', possess: 'Poseer una ventana', gaze: 'Mirar el satélite', satellite: 'Satélite completo (luz roja)',
         victory: 'Celebración', alarm: 'Alarma: venir a tu cursor', zap: 'Rayo a tu cursor', hurt: 'Golpe de error',
         spin: 'Giro', hop: 'Salto', split: 'Sus otras mentes (copias)', curious: 'Ladear la cabeza', look: 'Mirar a los lados',
@@ -280,14 +280,14 @@ function rebuildTray() {
       hooksOff: 'Install Claude Code hooks', hooksRemove: 'Remove Claude Code hooks', quit: 'Quit',
       acts: 'Animations',
       actNames: {
-        nap: 'Nap: the green mask', teleport: 'Teleport', peek: 'Peek from an edge', sit: 'Sit on a window',
+        nap: 'Nap: the green mask', dance: 'Dance', teleport: 'Teleport', peek: 'Peek from an edge', sit: 'Sit on a window',
         fall: 'Fall', possess: 'Possess a window', gaze: 'Look at the satellite', satellite: 'Whole satellite (red light)',
         victory: 'Victory', alarm: 'Alarm: come to your pointer', zap: 'Zap your pointer', hurt: 'Error hit',
         spin: 'Spin', hop: 'Hop', split: 'Her other minds (copies)', curious: 'Cock her head', look: 'Look around',
         turn: 'Turn around', flinch: 'Flinch',
       },
       opencodeOff: 'Install the opencode plugin', opencodeRemove: 'Remove the opencode plugin',
-      withAgents: 'Only with an AI agent open', quiet: 'Hide in fullscreen and games', possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
+      withAgents: 'Only with an AI agent open', quiet: 'Hide in fullscreen and games', dance: 'Dance to my music', possessNow: 'Possess a window', lively: 'Livelier', name: 'What she calls you', nameUser: 'My user name', nameOther: 'Another name…', nameAsk: 'What should she call you?', nameSave: 'Save',
     }
     : {
       online: `Capri — à l'écoute sur ${PORT}`, teleport: 'Téléporter', satellite: 'Regarder le satellite', demo: 'Lancer la démo', show: 'La faire revenir', hide: 'La ranger',
@@ -297,14 +297,14 @@ function rebuildTray() {
       hooksOff: 'Installer les hooks Claude Code', hooksRemove: 'Retirer les hooks Claude Code', quit: 'Quitter',
       acts: 'Animations',
       actNames: {
-        nap: 'Sieste : le masque vert', teleport: 'Téléportation', peek: 'Passer la tête par un bord', sit: 'S’asseoir sur une fenêtre',
+        nap: 'Sieste : le masque vert', dance: 'Danser', teleport: 'Téléportation', peek: 'Passer la tête par un bord', sit: 'S’asseoir sur une fenêtre',
         fall: 'Tomber', possess: 'Posséder une fenêtre', gaze: 'Regarder le satellite', satellite: 'Satellite complet (lumière rouge)',
         victory: 'Victoire', alarm: 'Alerte : venir au pointeur', zap: 'Éclair sur le pointeur', hurt: 'Coup d’erreur',
         spin: 'Tour sur elle-même', hop: 'Saut', split: 'Ses autres esprits (copies)', curious: 'Pencher la tête', look: 'Regarder autour',
         turn: 'Se retourner', flinch: 'Sursaut',
       },
       opencodeOff: 'Installer le plugin opencode', opencodeRemove: 'Retirer le plugin opencode',
-      withAgents: 'Seulement avec une IA ouverte', quiet: 'Se cacher en plein écran et en jeu', possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
+      withAgents: 'Seulement avec une IA ouverte', quiet: 'Se cacher en plein écran et en jeu', dance: 'Danser sur ma musique', possessNow: 'Posséder une fenêtre', lively: 'Plus animée', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
     };
 
   // Linux trays (caelestia's among them) often don't draw checkmarks: say the state in the label
@@ -361,6 +361,7 @@ function rebuildTray() {
     },
     { label: state(t.wander, cfg.wander), type: 'checkbox', checked: cfg.wander, click: (item) => updateConfig({ wander: item.checked }) },
     { label: state(t.possess, cfg.possess), type: 'checkbox', checked: cfg.possess, click: (item) => updateConfig({ possess: item.checked }) },
+    { label: state(t.dance, cfg.dance), type: 'checkbox', checked: cfg.dance, click: (item) => updateConfig({ dance: item.checked }) },
     { label: state(t.quiet, cfg.quiet), type: 'checkbox', checked: cfg.quiet, click: (item) => { updateConfig({ quiet: item.checked }); updateQuiet(); } },
     { label: state(t.withAgents, cfg.withAgents), type: 'checkbox', checked: cfg.withAgents, click: (item) => updateConfig({ withAgents: item.checked }) },
     { label: state(t.lively, cfg.lively), type: 'checkbox', checked: cfg.lively, click: (item) => updateConfig({ lively: item.checked }) },
@@ -449,6 +450,28 @@ function watchGamemode() {
       }
     });
   }, 5000);
+}
+
+// Dancing: something playing in a music player (MPRIS, through playerctl). Browsers are left out:
+// from there a video and a song look the same, and she shouldn't dance through your anime.
+const BROWSERS = /^(brave|chromium|chrome|google-chrome|firefox|vivaldi|opera|edge|microsoft-edge|librewolf|zen)/i;
+let musicOn = false;
+
+function watchMusic() {
+  if (process.platform !== 'linux') return;
+  setInterval(() => {
+    execFile('playerctl', ['-a', 'metadata', '--format', '{{playerName}}\t{{status}}'], { timeout: 2000 }, (err, stdout) => {
+      const playing = !err && String(stdout).split('\n').some((line) => {
+        const [player, status] = line.split('\t');
+        return status === 'Playing' && player && !BROWSERS.test(player);
+      });
+      const on = playing && config.load().dance;
+      if (on !== musicOn) {
+        musicOn = on;
+        sendCommand('music', { on });
+      }
+    });
+  }, 3000);
 }
 
 // "Only with an agent open": she leaves soon after the last agent session ends, or when no
@@ -632,6 +655,7 @@ function main() {
     if (!HYPR) globalShortcut.register('Control+Alt+C', () => toggleVisible());
     setInterval(leaveWithoutAgents, 15000);
     watchGamemode();
+    watchMusic();
     screen.on('display-metrics-changed', fitOverlay);
     screen.on('display-added', () => { fitOverlay(); rebuildTray(); });
     screen.on('display-removed', () => { fitOverlay(); rebuildTray(); });
