@@ -105,11 +105,6 @@ function createOverlay() {
   overlay.loadURL('capri://app/src/renderer/index.html');
   // always shown: put away, she's still there as her biochip in the corner
   overlay.once('ready-to-show', () => overlay.showInactive());
-  // On Hyprland a click on her gives the overlay the keyboard: hand it straight back (the drag
-  // keeps going, the pointer isn't the keyboard), or your next shortcut would land on her.
-  overlay.on('focus', () => {
-    if (HYPR) windowWatch?.refocus();
-  });
   // A "close window" shortcut that reached her anyway: she stays, unless you quit from the tray.
   overlay.on('close', (e) => {
     if (!quitting) e.preventDefault();
@@ -382,6 +377,11 @@ function createTray() {
 }
 
 function registerIpc() {
+  // On Hyprland a click on her gives the overlay the keyboard. Not taken back on the press:
+  // Hyprland would move the pointer away with it and the drag would never see its release.
+  ipcMain.on('overlay:released', () => {
+    if (HYPR) windowWatch?.refocus();
+  });
   ipcMain.on('overlay:interactive', (_e, on) => {
     overlay?.setIgnoreMouseEvents(!on, { forward: true });
     if (!on && HYPR) windowWatch?.refocus();

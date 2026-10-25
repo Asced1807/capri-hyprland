@@ -113,8 +113,29 @@ async function boot() {
   });
   // Wayland doesn't forward the pointer to a click-through window: on Hyprland the main process
   // reads it from the compositor and we replay it as the moves the browser would have sent.
+  // Only while the browser itself is silent: real events win, and a press whose release never
+  // came (the compositor moved the pointer away from us mid-drag) is released here, or she'd
+  // follow the pointer and the overlay would keep catching every click on the screen.
   let pointerInside = false;
+  let lastReal = 0;
+  let pressed = false;
+  window.addEventListener('mousemove', (e) => {
+    if (e.isTrusted) lastReal = performance.now();
+  }, true);
+  window.addEventListener('mousedown', (e) => {
+    if (e.isTrusted) {
+      pressed = true;
+      lastReal = performance.now();
+    }
+  }, true);
+  window.addEventListener('mouseup', () => {
+    if (!pressed) return;
+    pressed = false;
+    host.released?.(); // the click focused the overlay: give the keyboard back now
+  }, true);
   host.onPointer?.((p) => {
+    if (performance.now() - lastReal < 250) return; // the browser is getting the real thing
+    if (pressed) window.dispatchEvent(new MouseEvent('mouseup', { clientX: p.x, clientY: p.y }));
     if (p.inside) {
       pointerInside = true;
       window.dispatchEvent(new MouseEvent('mousemove', { clientX: p.x, clientY: p.y }));
