@@ -35,6 +35,7 @@ let tray = null;
 let demoTimer = null;
 let windowWatch = null;
 let ruleKeeper = null;
+let quitting = false;
 
 const userSoundsDir = () => path.join(app.getPath('userData'), 'sounds');
 
@@ -104,6 +105,15 @@ function createOverlay() {
   overlay.loadURL('capri://app/src/renderer/index.html');
   // always shown: put away, she's still there as her biochip in the corner
   overlay.once('ready-to-show', () => overlay.showInactive());
+  // On Hyprland a click on her gives the overlay the keyboard: hand it straight back (the drag
+  // keeps going, the pointer isn't the keyboard), or your next shortcut would land on her.
+  overlay.on('focus', () => {
+    if (HYPR) windowWatch?.refocus();
+  });
+  // A "close window" shortcut that reached her anyway: she stays, unless you quit from the tray.
+  overlay.on('close', (e) => {
+    if (!quitting) e.preventDefault();
+  });
   overlay.webContents.on('render-process-gone', (_e, details) => {
     console.error('[capri] renderer gone:', details.reason);
   });
@@ -490,6 +500,9 @@ function main() {
     screen.on('display-removed', () => { fitOverlay(); rebuildTray(); });
   });
 
+  app.on('before-quit', () => {
+    quitting = true;
+  });
   app.on('will-quit', () => {
     globalShortcut.unregisterAll();
     windowWatch?.stop();
