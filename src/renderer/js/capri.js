@@ -1120,15 +1120,16 @@ export class Capri {
     return wins.find((w) => w.id === fg && ok(w)) || wins.find(ok) || null;
   }
 
-  canPossess() {
-    return this.possessWindows && !this.busy && !this.hidden && !reducedMotion.matches && Boolean(this.possessTarget());
+  // `force`: you asked for it from the tray, so the "on her own" setting doesn't apply
+  canPossess({ force = false } = {}) {
+    return (force || this.possessWindows) && !this.busy && !this.hidden && !reducedMotion.matches && Boolean(this.possessTarget());
   }
 
   // Like in the show, she gets into things: she dives into the window she sits on and takes it
   // over (fx.possess: its frame crackles, it glitches, it looks at you with her eyes), then comes
   // out of another window, or further along this one if there's no other.
-  async possess() {
-    if (!this.canPossess()) return false;
+  async possess({ force = false } = {}) {
+    if (!this.canPossess({ force })) return false;
     const s = this.scale;
     const win = this.possessTarget();
     const id = win.id;

@@ -309,7 +309,7 @@ async function boot() {
           await capri.unstow();
         }
         await until(free, 6000);
-        capri.possess();
+        capri.possess({ force: true }); // asked for: even with "Possess my windows" off
         break;
       case 'satellite': // the whole sequence, on demand (tray)
         if (capri.stowed) {

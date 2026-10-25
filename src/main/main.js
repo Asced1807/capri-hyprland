@@ -254,7 +254,7 @@ function rebuildTray() {
     ? {
       online: `Capri — escuchando en ${PORT}`, teleport: 'Teletransportar', satellite: 'Mirar el satélite', demo: 'Ver la demo', show: 'Traerla de vuelta', hide: 'Guardarla',
       size: 'Tamaño', small: 'Pequeña', medium: 'Mediana', large: 'Grande', sound: 'Sonido', mute: 'Silenciar',
-      soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse cuando no hay nada', possess: 'Poseer mis ventanas',
+      soundsDir: 'Abrir carpeta de sonidos propios', screen: 'Pantalla', wander: 'Pasearse sola', possess: 'Poseer ventanas sola',
       lang: 'Idioma', auto: 'Automático (sistema)', startup: 'Arrancar con el sistema', hooksOn: 'Hooks de Claude Code: instalados',
       hooksOff: 'Instalar hooks de Claude Code', hooksRemove: 'Quitar hooks de Claude Code', quit: 'Salir',
       possessNow: 'Poseer una ventana', name: 'Cómo me llamas', nameUser: 'Mi usuario', nameOther: 'Otro nombre…', nameAsk: '¿Cómo quieres que te llame?', nameSave: 'Guardar',
@@ -277,6 +277,11 @@ function rebuildTray() {
       possessNow: 'Posséder une fenêtre', name: 'Comment elle t’appelle', nameUser: 'Mon nom d’utilisateur', nameOther: 'Un autre nom…', nameAsk: 'Comment veux-tu qu’elle t’appelle ?', nameSave: 'Enregistrer',
     };
 
+  // Linux trays (caelestia's among them) often don't draw checkmarks: say the state in the label
+  const yes = lang === 'es' ? 'sí' : lang === 'fr' ? 'oui' : 'on';
+  const no = lang === 'es' ? 'no' : lang === 'fr' ? 'non' : 'off';
+  const state = (label, on) => (process.platform === 'linux' ? `${label}: ${on ? yes : no}` : label);
+
   const displays = screen.getAllDisplays();
   const current = targetDisplay().id;
 
@@ -298,7 +303,7 @@ function rebuildTray() {
     {
       label: t.sound,
       submenu: [
-        { label: t.mute, type: 'checkbox', checked: cfg.muted, click: (item) => updateConfig({ muted: item.checked }) },
+        { label: state(t.mute, cfg.muted), type: 'checkbox', checked: cfg.muted, click: (item) => updateConfig({ muted: item.checked }) },
         { type: 'separator' },
         {
           label: t.soundsDir,
@@ -319,8 +324,8 @@ function rebuildTray() {
         click: () => { config.save({ displayId: d.id }); fitOverlay(); rebuildTray(); },
       })),
     },
-    { label: t.wander, type: 'checkbox', checked: cfg.wander, click: (item) => updateConfig({ wander: item.checked }) },
-    { label: t.possess, type: 'checkbox', checked: cfg.possess, click: (item) => updateConfig({ possess: item.checked }) },
+    { label: state(t.wander, cfg.wander), type: 'checkbox', checked: cfg.wander, click: (item) => updateConfig({ wander: item.checked }) },
+    { label: state(t.possess, cfg.possess), type: 'checkbox', checked: cfg.possess, click: (item) => updateConfig({ possess: item.checked }) },
     {
       label: t.name,
       submenu: [
