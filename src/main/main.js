@@ -394,7 +394,10 @@ function registerIpc() {
   });
   ipcMain.on('overlay:interactive', (_e, on) => {
     overlay?.setIgnoreMouseEvents(!on, { forward: true });
-    if (!on && HYPR) windowWatch?.refocus();
+    if (HYPR) {
+      windowWatch?.setPassThrough(!on); // what actually lets the pointer through on Wayland
+      if (!on) windowWatch?.refocus();
+    }
   });
   ipcMain.handle('overlay:cursor', () => {
     if (HYPR) return windowWatch.cursor();
@@ -494,7 +497,7 @@ function main() {
     registerIpc();
     if (HYPR) {
       await applyWindowRules(APP_CLASS);
-      ruleKeeper = keepWindowRules(APP_CLASS);
+      ruleKeeper = keepWindowRules(APP_CLASS, () => windowWatch?.ruleReset?.());
     }
     createOverlay();
     createTray();

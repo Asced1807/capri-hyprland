@@ -51,8 +51,11 @@ const hyprctl = (args) => new Promise((resolve) => {
 const RULE = {
   float: true,
   pin: true,
-  // not no_focus: Hyprland doesn't send the pointer to such a window, and she couldn't be
-  // clicked or dragged. Hovering her doesn't focus her; a click does, and refocus() undoes it.
+  // Electron's click-through (setIgnoreMouseEvents) doesn't work on Wayland: the overlay would
+  // take the pointer over the whole screen (no wheel, no scrollbars, no clicks anywhere).
+  // no_focus makes Hyprland skip her for the pointer entirely, and it's lifted with set_prop
+  // only while the pointer is over her body (setPassThrough), so she can be clicked and dragged.
+  no_focus: true,
   no_follow_mouse: true,
   no_initial_focus: true,
   border_size: 0,
@@ -117,7 +120,7 @@ async function applyWindowRules(className) {
 
 // A config reload drops runtime rules: put ours back each time (caelestia reloads on every
 // wallpaper or scheme change). Listens on the event socket, reconnects if Hyprland restarts it.
-function keepWindowRules(className) {
+function keepWindowRules(className, onReload = () => {}) {
   let stopped = false;
   let sock = null;
   const connect = () => {
@@ -129,7 +132,10 @@ function keepWindowRules(className) {
       pending += chunk;
       const lines = pending.split('\n');
       pending = lines.pop();
-      if (lines.some((l) => l.startsWith('configreloaded>>'))) applyWindowRules(className);
+      if (lines.some((l) => l.startsWith('configreloaded>>'))) {
+        applyWindowRules(className);
+        onReload();
+      }
     });
     sock.on('error', () => {});
     sock.on('close', () => setTimeout(connect, 3000));
@@ -151,6 +157,8 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer, isPressed = () => fa
   let lastSnap = '';
   let giveBackTo = null; // where the keyboard belongs: the last window you used on the screen you see
   let givingBack = false;
+  let selfAddress = null;
+  let passThrough = true; // what the rule starts with
   let lastPointer = '';
   let pointer = { x: 0, y: 0, inside: false };
 
@@ -166,6 +174,7 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer, isPressed = () => fa
     // her own overlay; the demo's terminal is ours too, but she sits on that one
     const isSelf = (c) => c.pid === process.pid && c.title === 'Capri';
     const self = clients.find((c) => isSelf(c) && c.mapped);
+    selfAddress = self?.address || null;
     const monitor = monitors.find((m) => (self ? m.id === self.monitor : m.focused)) || monitors[0];
     if (!monitor) return;
     origin = self ? { x: self.at[0], y: self.at[1], monitor: monitor.id } : { x: monitor.x, y: monitor.y, monitor: monitor.id };
@@ -248,8 +257,20 @@ function startHyprlandWatch({ overlay, onUpdate, onPointer, isPressed = () => fa
       + `hl.config({ cursor = { no_warps = ${warps} } })`]);
   }
 
+  // the pointer goes through her (true), or she takes it (false)
+  async function setPassThrough(on) {
+    if (on === passThrough || !selfAddress) return;
+    passThrough = on;
+    await hyprctl(['dispatch', `hl.dsp.window.set_prop({ window = "address:${selfAddress}", prop = "no_focus", value = "${on ? 1 : 0}" })`]);
+  }
+
   return {
     cursor: () => pointer,
+    setPassThrough,
+    // a config reload put the rule back: she's pass-through again
+    ruleReset() {
+      passThrough = true;
+    },
     // the page (re)loaded and missed what was sent before: send it all again on the next tick
     resend() {
       lastSnap = '';
